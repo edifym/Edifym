@@ -46,3 +46,6 @@ endif()
 
 target_link_libraries(EdifymRunner PUBLIC ${MFIVE})
 target_link_libraries(EdifymRunner PUBLIC ${LUT})
+
+add_definitions(-DTASKS=$ENV{TASKS})
+add_definitions(-DTASK_SIZE=$ENV{TASK_SIZE})
