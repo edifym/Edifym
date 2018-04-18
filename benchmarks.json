@@ -1,0 +1,17 @@
+{
+  "papabench1": {
+    "tasks": [{
+      "name": "autopilot"
+    },{
+      "name": "fly_by_wire"
+    }]
+  },
+  "papabench2": {
+    "tasks": [{
+      "name": "autopilot"
+    },{
+      "name": "fly_by_wire",
+      "depends": "autopilot"
+    }]
+  }
+}
