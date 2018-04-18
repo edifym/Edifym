@@ -1,2 +1,6 @@
 .idea/
 cmake-build-debug/
+CMakeFiles/
+CMakeCache.txt
+.CMakeLists.txt.swp
+

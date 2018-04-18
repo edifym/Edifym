@@ -11,19 +11,19 @@ SET(CMAKE_SYSTEM_VERSION 1)
 SET(CMAKE_C_COMPILER   aarch64-linux-gnu-gcc)
 SET(CMAKE_CXX_COMPILER aarch64-linux-gnu-g++)
 
-if(NOT "$ENV{M5_DIR}")
+if(NOT DEFINED ENV{M5_DIR})
     message(FATAL_ERROR "Please set the environment variable M5_DIR to where gem5/util/m5 is located.")
 endif()
 
-if(NOT "$ENV{TASK_SIZE}")
+if(NOT DEFINED ENV{TASK_SIZE})
     message(FATAL_ERROR "Please set the environment variable TASK_SIZE to how many tasks there should be executed.")
 endif()
 
-if(NOT "$ENV{TASKS}")
+if(NOT DEFINED ENV{TASKS})
     message(FATAL_ERROR "Please set the environment variable TASKS to the names of the tasks to be executed, as defined in LIBRARY_UNDER_TEST.")
 endif()
 
-if(NOT "$ENV{LIBRARY_UNDER_TEST}")
+if(NOT DEFINED ENV{LIBRARY_UNDER_TEST})
     message(FATAL_ERROR "Please set the environment variable LIBRARY_UNDER_TEST to the full name of the library to be included in linking.")
 endif()
 
