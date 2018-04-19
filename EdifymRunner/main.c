@@ -2,7 +2,7 @@
 #include "executable_task.h"
 #include <string.h>
 
-extern task* tasks_to_execute;
+extern task tasks_to_execute;
 
 task* find_task_by_name(task* t, char const *name) {
     while(t != NULL) {
@@ -20,7 +20,7 @@ int main( void ) {
     char *ordered_task_names[TASK_SIZE] = TASKS;
 
     for (int i = 0; i < TASK_SIZE; i++) {
-        task* t = find_task_by_name(tasks_to_execute, ordered_task_names[i]);
+        task* t = find_task_by_name(&tasks_to_execute, ordered_task_names[i]);
 
         if(t == NULL) {
             printf("Horrible disaster");
