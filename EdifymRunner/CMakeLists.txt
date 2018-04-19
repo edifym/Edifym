@@ -28,13 +28,12 @@ if(NOT DEFINED ENV{LIBRARY_UNDER_TEST})
 endif()
 
 
-file(GLOB_RECURSE PROJECT_SOURCES ${PROJECT_SOURCE_DIR}/*.c)
-add_library(EdifymRunner STATIC ${PROJECT_SOURCES} executable_task.h)
+add_executable(EdifymRunner main.c executable_task.h)
 
-include_directories("$ENV{M5_DIR}/../../include/gem5")
+include_directories("$ENV{M5_DIR}/../../include")
 
 find_library(MFIVE NAMES libm5.a HINTS $ENV{M5_DIR})
-find_library(LUT NAMES $ENV{LIBRARY_UNDER_TEST})
+find_library(LUT NAMES $ENV{LIBRARY_UNDER_TEST} HINTS "./")
 
 if(NOT MFIVE)
     message(FATAL_ERROR "Please compile gem5/util/m5 for aarch64 and ensure libm5.a is present in M5_DIR")
@@ -49,3 +48,5 @@ target_link_libraries(EdifymRunner PUBLIC ${LUT})
 
 add_definitions(-DTASKS=$ENV{TASKS})
 add_definitions(-DTASK_SIZE=$ENV{TASK_SIZE})
+
+set_target_properties(EdifymRunner PROPERTIES LINK_FLAGS "-static" )
