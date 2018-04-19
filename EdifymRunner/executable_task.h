@@ -5,12 +5,12 @@
 #ifndef EDIFYMRUNNER_EXECUTABLE_TASK_H
 #define EDIFYMRUNNER_EXECUTABLE_TASK_H
 
-typedef void (*functionPtr)();
+typedef int (*functionPtr)();
 
 typedef struct task {
     char *name;
     functionPtr function;
-    task* next_task;
+    struct task* next_task;
 } task;
 
 #endif //EDIFYMRUNNER_EXECUTABLE_TASK_H
