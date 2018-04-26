@@ -18,5 +18,5 @@ if __name__ == "__main__":
     benchmark_data = json.load(open('benchmarks.json'))
     main_config = MainConfig(main_data)
     benchmark_config = BenchmarkConfig(benchmark_data)
-    task = CompileSingleSimulationTask(main_config, benchmark_config.benchmarks[0])
+    task = CompileSingleSimulationTask(main_config, benchmark_config.benchmarks[0], 1)
     task.execute()
