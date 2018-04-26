@@ -21,7 +21,7 @@ if __name__ == "__main__":
     main_config = MainConfig(main_data)
     benchmark_config = BenchmarkConfig(benchmark_data)
     q = Queue()
-    GenerateCompilableSimulationsTask(benchmark_config.benchmarks[0], q).execute()
+    GenerateCompilableSimulationsTask(main_config, benchmark_config.benchmarks[0], q).execute()
     q.put(RunSingleSimulationTask(main_config, 1))
     while True:
         task = q.get()

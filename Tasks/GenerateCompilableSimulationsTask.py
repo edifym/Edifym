@@ -14,8 +14,9 @@ class GenerateCompilableSimulationsTask(ITask):
     benchmark: Benchmark
     q: Queue
 
-    def __init__(self, config: Benchmark, q: Queue):
-        self.config = config
+    def __init__(self, main_config: MainConfig, benchmark: Benchmark, q: Queue):
+        self.main_config = main_config
+        self.benchmark = benchmark
         self.q = q
 
     def produce_combinations(self) -> List[Benchmark]:

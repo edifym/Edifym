@@ -1,4 +1,4 @@
-import CommandHelper
+from CommandHelper import CommandHelper
 import MainConfig
 from Tasks.ITask import ITask
 import sys
@@ -17,7 +17,7 @@ class RunSingleSimulationTask(ITask):
             CommandHelper.run_command([self.main_config.gem5_executable_path, self.main_config.gem5_se_script_path,
                                        '--cpu-type', 'DerivO3CPU', '--caches', '--num-l2caches=0', '--num-l3caches=0',
                                        '-n', '2', '-c',
-                                       f'"../out/{self.run_number}/EdifymRunner;../out/{self.run_number}/EdifymRunner"'], {})
+                                       f'../out/{self.run_number}/EdifymRunner;../out/{self.run_number}/EdifymRunner'], {})
         except OSError as e:
             print(f'OSError> {e.errno} {e.strerror} {e.filename}')
         except TypeError as e:

@@ -1,4 +1,4 @@
-import CommandHelper
+from CommandHelper import CommandHelper
 import MainConfig
 from BenchmarkConfig import Benchmark
 from Tasks.ITask import ITask
