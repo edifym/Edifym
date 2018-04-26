@@ -2,7 +2,7 @@ import BenchmarkConfig
 from Tasks.ITask import ITask
 
 
-class GenerateCompilableSimulationsITask(ITask):
+class GenerateCompilableSimulationsTask(ITask):
     config: BenchmarkConfig
 
     def __init__(self, config: BenchmarkConfig):

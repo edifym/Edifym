@@ -11,12 +11,12 @@ import json
 
 from MainConfig import MainConfig
 from BenchmarkConfig import BenchmarkConfig
-from Tasks.CompileSingleSimulationTask import CompileSingleSimulationITask
+from Tasks.CompileSingleSimulationTask import CompileSingleSimulationTask
 
 if __name__ == "__main__":
     main_data = json.load(open('config.json'))
     benchmark_data = json.load(open('benchmarks.json'))
     main_config = MainConfig(main_data)
     benchmark_config = BenchmarkConfig(benchmark_data)
-    task = CompileSingleSimulationITask(main_config, benchmark_config.benchmarks[0])
+    task = CompileSingleSimulationTask(main_config, benchmark_config.benchmarks[0])
     task.execute()
