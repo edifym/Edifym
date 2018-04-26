@@ -35,7 +35,7 @@ class BenchmarkConfig:
             tasks: List[Task] = []
             for json_task in config_json[key]["tasks"]:
                 depends = None
-                if json_task.keys().contains('depends'):
+                if 'depends' in json_task.keys():
                     depends = json_task['depends']
                 tasks.append(Task(json_task['name'], depends))
 

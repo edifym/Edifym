@@ -1,3 +1,4 @@
 {
-  "gem5_path": "/home/oipo/uva/thesis/gem5.fast"
+  "gem5_path": "/home/oipo/uva/thesis/gem5.fast",
+  "library_name": "libtest.a"
 }

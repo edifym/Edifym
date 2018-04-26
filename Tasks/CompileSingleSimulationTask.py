@@ -20,4 +20,4 @@ class CompileSingleSimulationITask(ITask):
         new_env['LIBRARY_UNDER_TEST'] = self.main_config.library_name
         new_env['TASK_SIZE'] = len(self.benchmark.tasks)
         new_env['TASKS'] = '{' + ', '.join(Slinkie(self.benchmark.tasks).map(lambda it: f"\"{it.name}\"")) + '}'
-        print f"{new_env['TASKS']}"
+        print(f"{new_env['TASKS']}")
