@@ -1,4 +1,6 @@
 {
   "m5_path": "/home/oipo/uva/thesis/gem5/util/m5/",
-  "library_name": "libtest.a"
+  "gem5_executable_path": "/home/oipo/uva/thesis/gem5.opt",
+  "library_name": "libtest.a",
+  "num_cpus": 2
 }
