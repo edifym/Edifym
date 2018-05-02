@@ -1,9 +1,9 @@
+from JsonHelper import JsonHelper
 from CommandHelper import CommandHelper
 import MainConfig
 from BenchmarkConfig import Benchmark
 from Tasks.ITask import ITask
 import sys
-import jsonpickle
 
 
 class CompileSingleSimulationTask(ITask):
@@ -16,17 +16,6 @@ class CompileSingleSimulationTask(ITask):
         self.benchmark = benchmark
         self.config_number = config_number
 
-    @staticmethod
-    def object_as_json_to_file(filepath: str, object_to_store):
-        if jsonpickle.load_backend('simplejson'):
-            jsonpickle.set_preferred_backend('simplejson')
-            jsonpickle.set_encoder_options('simplejson', sort_keys=True, indent=4)
-        else:
-            print('Couldn\'t load simplejson')
-        with open(filepath, 'w') as outfile:
-            json_output = jsonpickle.encode(object_to_store, unpicklable=False)
-            outfile.write(json_output)
-
     def execute(self):
         try:
             new_env = CommandHelper.create_environment_from_config(self.main_config, self.benchmark)
@@ -35,8 +24,8 @@ class CompileSingleSimulationTask(ITask):
             CommandHelper.run_command(['mkdir', '-p', f'../out/{self.config_number}'], new_env)
             CommandHelper.run_command(['cp', 'EdifymRunner', f'../out/{self.config_number}'], new_env)
 
-            self.object_as_json_to_file(f'out/{self.config_number}/benchmark.json', self.benchmark)
-            self.object_as_json_to_file(f'out/{self.config_number}/config.json', self.main_config)
+            JsonHelper.object_as_json_to_file(f'out/{self.config_number}/benchmark.json', self.benchmark)
+            JsonHelper.object_as_json_to_file(f'out/{self.config_number}/config.json', self.main_config)
         except OSError as e:
             print(f'OSError> {e.errno} {e.strerror} {e.filename}')
         except TypeError as e:
