@@ -19,20 +19,17 @@ class GenerateCompilableSimulationsTask(ITask):
         self.benchmark = benchmark
         self.q = q
 
-    def produce_combinations(self) -> List[Benchmark]:
-        combinations: List[Benchmark] = []
+    def produce_permutations(self) -> List[Benchmark]:
+        permutations: List[Benchmark] = []
 
-        # TODO generate empty subsets where compiled binary does nothing
-        # TODO generate subset per core
+        for L in range(0, len(self.benchmark.tasks) + 1):
+            for sub_benchmark in itertools.permutations(self.benchmark.tasks, L):
+                permutations.append(Benchmark(self.benchmark.name, sub_benchmark))
 
-        for L in range(1, len(self.benchmark.tasks) + 1):
-            for sub_benchmark in itertools.combinations(self.benchmark.tasks, L):
-                combinations.append(Benchmark(self.benchmark.name, sub_benchmark))
-
-        return combinations
+        return permutations
 
     def execute(self):
-        combinations = self.produce_combinations()
+        combinations = self.produce_permutations()
         i = 1
 
         # TODO ensure that tasks with depends don't get scheduled before dependee has run.
