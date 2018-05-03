@@ -30,9 +30,11 @@ class GenerateRunSimulationsTask(ITask):
         return permutations
 
     def execute(self):
+        id = 1
         ids = list(map(int, self.get_immediate_subdirectories('out')))
         permutations = self.produce_permutations(ids)
 
         for sub_simulation in permutations:
-            new_task = RunSingleSimulationTask(self.main_config, self.main_config.num_cpus, sub_simulation)
+            new_task = RunSingleSimulationTask(self.main_config, self.main_config.num_cpus, sub_simulation, id)
             self.q.put(new_task)
+            id += 1
