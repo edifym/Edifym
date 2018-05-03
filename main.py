@@ -8,12 +8,19 @@
 # -
 
 import json
-from queue import Queue
+from queue import Queue, Empty
 
 from MainConfig import MainConfig
 from BenchmarkConfig import BenchmarkConfig
 from Tasks.GenerateCompilableSimulationsTask import GenerateCompilableSimulationsTask
 from Tasks.GenerateRunSimulationsTask import GenerateRunSimulationsTask
+from multiprocessing import Pool
+
+def queueWorker(q: Queue):
+    while True:
+        task = q.get()
+        task.execute()
+        q.task_done()
 
 if __name__ == "__main__":
     main_data = json.load(open('config.json'))
@@ -22,8 +29,21 @@ if __name__ == "__main__":
     benchmark_config = BenchmarkConfig(benchmark_data)
     q = Queue()
     GenerateCompilableSimulationsTask(main_config, benchmark_config.benchmarks[0], q).execute()
-    q.put(GenerateRunSimulationsTask(main_config, q))
+
+    # compiling single threaded
+
     while True:
-        task = q.get()
-        task.execute()
-        q.task_done()
+        try:
+            task = q.get_nowait()
+            task.execute()
+            q.task_done()
+        except Empty:
+            break
+
+    GenerateRunSimulationsTask(main_config, q).execute()
+
+    # run simulations multithreaded
+
+    with Pool(4) as p:
+        p.map(queueWorker, [q, q, q])
+
