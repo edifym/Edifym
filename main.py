@@ -8,37 +8,27 @@
 # -
 
 import json
-import signal
-from queue import Queue, Empty
+from queue import Empty
 
 from MainConfig import MainConfig
 from BenchmarkConfig import BenchmarkConfig
 from Tasks.GenerateCompilableSimulationsTask import GenerateCompilableSimulationsTask
 from Tasks.GenerateRunSimulationsTask import GenerateRunSimulationsTask
-from multiprocessing import Pool
-
-q = Queue()
-should_quit = False
+from multiprocessing import Pool, Process, Queue
 
 
-def queue_worker(x):
-    while not should_quit:
+def queue_worker(q):
+    while True:
         task = q.get()
         task.execute()
-        q.task_done()
-
-
-def signal_handler(signal, frame):
-    should_quit = True
 
 
 if __name__ == "__main__":
-    signal.signal(signal.SIGINT, signal_handler)
-    
     main_data = json.load(open('config.json'))
     benchmark_data = json.load(open('benchmarks.json'))
     main_config = MainConfig(main_data)
     benchmark_config = BenchmarkConfig(benchmark_data)
+    q = Queue()
     GenerateCompilableSimulationsTask(main_config, benchmark_config.benchmarks[0], q).execute()
 
     # compiling single threaded
@@ -47,7 +37,6 @@ if __name__ == "__main__":
         try:
             task = q.get_nowait()
             task.execute()
-            q.task_done()
         except Empty:
             break
 
@@ -55,6 +44,8 @@ if __name__ == "__main__":
 
     # run simulations multithreaded
 
-    with Pool(4) as p:
-        p.map(queue_worker, [1, 2, 3, 4])
+    for i in range(0, 2):
+        p = Process(target=queue_worker, args=(q,))
+        p.start()
 
+    queue_worker(q)
