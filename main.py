@@ -16,18 +16,21 @@ from Tasks.GenerateCompilableSimulationsTask import GenerateCompilableSimulation
 from Tasks.GenerateRunSimulationsTask import GenerateRunSimulationsTask
 from multiprocessing import Pool
 
-def queueWorker(q: Queue):
+q = Queue()
+
+
+def queue_worker(x):
     while True:
         task = q.get()
         task.execute()
         q.task_done()
+
 
 if __name__ == "__main__":
     main_data = json.load(open('config.json'))
     benchmark_data = json.load(open('benchmarks.json'))
     main_config = MainConfig(main_data)
     benchmark_config = BenchmarkConfig(benchmark_data)
-    q = Queue()
     GenerateCompilableSimulationsTask(main_config, benchmark_config.benchmarks[0], q).execute()
 
     # compiling single threaded
@@ -45,5 +48,5 @@ if __name__ == "__main__":
     # run simulations multithreaded
 
     with Pool(4) as p:
-        p.map(queueWorker, [q, q, q])
+        p.map(queue_worker, [1, 2, 3, 4, 5])
 
