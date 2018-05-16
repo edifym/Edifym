@@ -35,6 +35,7 @@ class GenerateCompilableSimulationsTask(ITask):
         # TODO ensure that tasks with depends don't get scheduled before dependee has run.
 
         for sub_benchmark in combinations:
+            print(f'going to compile {sub_benchmark}')
             new_task = CompileSingleSimulationTask(self.main_config, sub_benchmark, i)
             self.q.put(new_task)
             i += 1

@@ -3,14 +3,14 @@
     "tasks": [{
       "name": "autopilot"
     },{
-      "name": "fly_by_wire"
+      "name": "flybywire"
     }]
   },
   "papabench2": {
     "tasks": [{
       "name": "autopilot"
     },{
-      "name": "fly_by_wire",
+      "name": "flybywire",
       "depends": "autopilot"
     }]
   }

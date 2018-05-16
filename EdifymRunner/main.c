@@ -2,12 +2,13 @@
 #include "executable_task.h"
 #include <string.h>
 #include <stdio.h>
+#include <sys/time.h>
 
 extern task tasks_to_execute;
 
 task* find_task_by_name(task* t, char const *name) {
     while(t != NULL) {
-        printf("checking for %s in task %s\n", name, t->name);
+        //printf("checking for %s in task %s\n", name, t->name);
         if (strcmp(t->name, name) == 0) {
             return t;
         }
@@ -15,6 +16,19 @@ task* find_task_by_name(task* t, char const *name) {
     }
 
     return NULL;
+}
+
+void print_all_task_names(task* t) {
+    while(t != NULL) {
+        printf("%s\n", t->name);
+        t = t->next_task;
+    }
+}
+
+void print_time() {
+  struct timeval tv;
+  int ret = gettimeofday(&tv, NULL);
+  printf("time: %i %li %li\n", ret, tv.tv_sec, tv.tv_usec);
 }
 
 int main( void ) {
@@ -26,15 +40,18 @@ int main( void ) {
         task* t = find_task_by_name(&tasks_to_execute, ordered_task_names[i]);
 
         if(t == NULL) {
-            printf("Horrible disaster\n");
+            printf("Horrible disaster trying to find task %s\n", ordered_task_names[i]);
+            print_all_task_names(&tasks_to_execute);
             return -1;
         }
 
         function = t->function;
 
+        print_time();
         m5_reset_stats(0, 0);
         function();
         m5_dump_stats(0, 0);
+        print_time();
     }
     return 0;
 }

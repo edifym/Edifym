@@ -9,6 +9,7 @@
 
 import json
 from queue import Empty
+from time import sleep
 
 from MainConfig import MainConfig
 from BenchmarkConfig import BenchmarkConfig
@@ -31,6 +32,7 @@ if __name__ == "__main__":
     q = Queue()
     GenerateCompilableSimulationsTask(main_config, benchmark_config.benchmarks[0], q).execute()
 
+    sleep(.25)
     # compiling single threaded
 
     while True:
@@ -38,6 +40,7 @@ if __name__ == "__main__":
             task = q.get_nowait()
             task.execute()
         except Empty:
+            print('done compiling')
             break
 
     GenerateRunSimulationsTask(main_config, q).execute()
