@@ -5,10 +5,13 @@
 #include <sys/time.h>
 
 extern task tasks_to_execute;
+#define ENABLE_TRACE 0
 
 task* find_task_by_name(task* t, char const *name) {
     while(t != NULL) {
-        //printf("checking for %s in task %s\n", name, t->name);
+#if defined(ENABLE_TRACE) && ENABLE_TRACE > 0
+        printf("checking for %s in task %s\n", name, t->name);
+#endif
         if (strcmp(t->name, name) == 0) {
             return t;
         }
@@ -45,11 +48,14 @@ int main( void ) {
             return -1;
         }
 
-        function = t->function;
-
+        if(t->init == NULL) {
+            printf("Horrible disaster trying to init for task %s\n", t->name);
+            return -1;
+        }
+        t->init(1, 100);
         print_time();
         m5_reset_stats(0, 0);
-        function();
+        t->function();
         m5_dump_stats(0, 0);
         print_time();
     }
