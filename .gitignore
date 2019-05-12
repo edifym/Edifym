@@ -12,3 +12,4 @@ EdifymRunner/EdifymRunner
 EdifymRunner/cmake_install.cmake
 EdifymRunner/exec.sh
 EdifymRunner/log
+venv/

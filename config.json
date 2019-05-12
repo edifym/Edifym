@@ -1,7 +1,10 @@
 {
-  "m5_path": "/home/oipo/uva/thesis/gem5/util/m5/",
-  "gem5_executable_path": "/home/oipo/uva/thesis/gem5.opt",
-  "gem5_se_script_path": "/home/oipo/uva/thesis/gem5/configs/example/se.py",
+  "m5_path": "/home/oipo/Documents/Programming/thesis/gem5/util/m5/",
+  "gem5_executable_path": "/home/oipo/Documents/Programming/thesis/gem5.opt",
+  "gem5_se_script_path": "/home/oipo/Documents/Programming/thesis/gem5/configs/example/se.py",
   "library_name": "libtest.a",
-  "num_cpus": 2
+  "num_cpus": 2,
+  "num_workers": 4,
+  "benchmark": "papabench1",
+  "show_command_output": false
 }

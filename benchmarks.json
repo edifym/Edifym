@@ -1,7 +1,17 @@
 {
   "papabench1": {
     "tasks": [{
-      "name": "autopilot"
+      "name": "autopilot",
+      "values": [{
+        "name": "max_m",
+        "range": [1, 2]
+      },{
+        "name": "max_y",
+        "range": [1, 2]
+      },{
+        "name": "max_z",
+        "range": [1]
+      }]
     },{
       "name": "flybywire"
     }]

@@ -49,9 +49,15 @@ int main( void ) {
         }
 
         if(t->init == NULL) {
-            printf("Horrible disaster trying to init for task %s\n", t->name);
+            printf("Horrible disaster init is NULL For task %s\n", t->name);
             return -1;
         }
+
+        if(t->function == NULL) {
+            printf("Horrible disaster function is NULL for task %s\n", t->name);
+            return -1;
+        }
+
         t->init(1, 100);
         print_time();
         m5_reset_stats(0, 0);

@@ -8,20 +8,37 @@
 # -
 
 import json
+import sys
 from queue import Empty
+import signal
 from time import sleep
 
 from MainConfig import MainConfig
 from BenchmarkConfig import BenchmarkConfig
 from Tasks.GenerateCompilableSimulationsTask import GenerateCompilableSimulationsTask
 from Tasks.GenerateRunSimulationsTask import GenerateRunSimulationsTask
-from multiprocessing import Pool, Process, Queue
+from multiprocessing import Process, Queue, Value
+
+shm_quit = Value('b', False)
 
 
-def queue_worker(q):
-    while True:
-        task = q.get()
-        task.execute()
+def signal_handler(sig, frame):
+    print('Quitting all remaining workers')
+    shm_quit.value = True
+
+
+def queue_worker(q, id, local_shm_quit):
+    print(f'starting worker {id}')
+
+    while not local_shm_quit.value:
+        try:
+            task = q.get(False, 1000)
+            task.execute()
+        except Empty:
+            print('No more tasks for worker {id}')
+            break
+
+    print(f'stopping worker {id} {local_shm_quit.value}')
 
 
 if __name__ == "__main__":
@@ -30,25 +47,45 @@ if __name__ == "__main__":
     main_config = MainConfig(main_data)
     benchmark_config = BenchmarkConfig(benchmark_data)
     q = Queue()
-    GenerateCompilableSimulationsTask(main_config, benchmark_config.benchmarks[0], q).execute()
 
-    sleep(.25)
+    signal.signal(signal.SIGINT, signal_handler)
+
+    benchmark, = [bench for bench in benchmark_config.benchmarks if bench.name == main_config.benchmark]
+
+    GenerateCompilableSimulationsTask(main_config, benchmark, q).execute()
+
     # compiling single threaded
 
-    while True:
+    '''while not shm_quit.value:
         try:
-            task = q.get_nowait()
+            task = q.get(False, 1000)
             task.execute()
         except Empty:
             print('done compiling')
-            break
+            break'''
 
-    GenerateRunSimulationsTask(main_config, q).execute()
+    procs = []
+
+    for i in range(0, main_config.num_workers - 1):
+        p = Process(target=queue_worker, args=(q, i, shm_quit))
+        p.start()
+        procs.append(p)
+
+    queue_worker(q, main_config.num_workers, shm_quit)
+
+    if shm_quit.value:
+        sleep(1)
+        print('murdering self')
+        for p in procs:
+            p.terminate()
+        sys.exit()
+
+    #GenerateRunSimulationsTask(main_config, q).execute()
 
     # run simulations multithreaded
 
-    for i in range(0, 2):
-        p = Process(target=queue_worker, args=(q,))
+    '''for i in range(0, main_config.num_workers - 1):
+        p = Process(target=queue_worker, args=(q, i))
         p.start()
 
-    queue_worker(q)
+    queue_worker(q, main_config.num_workers)'''

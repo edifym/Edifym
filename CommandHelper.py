@@ -9,11 +9,14 @@ from slinkie import Slinkie
 class CommandHelper:
 
     @staticmethod
-    def run_command(command: List[str], new_env: Dict[str, str], cwd: str = './EdifymRunner'):
+    def run_command(command: List[str], new_env: Dict[str, str], show_output: bool = True, cwd: str = './EdifymRunner'):
             proc = subprocess.Popen(command, cwd=cwd, env=new_env, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            print(f'executing {proc.args}')
+            if show_output:
+                print(f'executing {proc.args}')
+
             output, error = proc.communicate()
-            if output:
+
+            if show_output and output:
                 print(f'{command[0]} output> {proc.returncode} {output}')
             if error:
                 print(f'{command[0]} error> {proc.returncode} {error.strip()}')

@@ -19,6 +19,7 @@ class RunSingleSimulationTask(ITask):
         self.id = id
 
     def execute(self):
+        print('Starting RunSingleSimulationTask')
         try:
             if len(self.run_numbers) != self.num_cpus:
                 raise AssertionError(f'length of run_numbers ({len(self.run_numbers)}) '
@@ -43,3 +44,4 @@ class RunSingleSimulationTask(ITask):
             print(f'AssertionError> {e}')
         except:
             print(f'Error> {sys.exc_info()[0]}')
+        print('RunSingleSimulationTask done')

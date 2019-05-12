@@ -17,12 +17,13 @@ class CompileSingleSimulationTask(ITask):
         self.config_number = config_number
 
     def execute(self):
+        print('Starting CompileSingleSimulationTask')
         try:
             new_env = CommandHelper.create_environment_from_config(self.main_config, self.benchmark)
-            CommandHelper.run_command(['cmake', '.'], new_env)
-            CommandHelper.run_command(['make'], new_env)
-            CommandHelper.run_command(['mkdir', '-p', f'../out/{self.config_number}'], new_env)
-            CommandHelper.run_command(['cp', 'EdifymRunner', f'../out/{self.config_number}'], new_env)
+            CommandHelper.run_command(['cmake', '.'], new_env, self.main_config.show_command_output)
+            CommandHelper.run_command(['make'], new_env, self.main_config.show_command_output)
+            CommandHelper.run_command(['mkdir', '-p', f'../out/{self.config_number}'], new_env, self.main_config.show_command_output)
+            CommandHelper.run_command(['cp', 'EdifymRunner', f'../out/{self.config_number}'], new_env, self.main_config.show_command_output)
 
             JsonHelper.object_as_json_to_file(f'out/{self.config_number}/benchmark.json', self.benchmark)
             JsonHelper.object_as_json_to_file(f'out/{self.config_number}/config.json', self.main_config)
@@ -36,3 +37,5 @@ class CompileSingleSimulationTask(ITask):
             print(f'AssertionError> {e}')
         except:
             print(f'Error> {sys.exc_info()[0]}')
+
+        print('CompileSingleSimulationTask done')
