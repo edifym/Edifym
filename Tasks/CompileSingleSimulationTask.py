@@ -20,10 +20,12 @@ class CompileSingleSimulationTask(ITask):
         print('Starting CompileSingleSimulationTask')
         try:
             new_env = CommandHelper.create_environment_from_config(self.main_config, self.benchmark)
-            CommandHelper.run_command(['cmake', '.'], new_env, self.main_config.show_command_output)
-            CommandHelper.run_command(['make'], new_env, self.main_config.show_command_output)
-            CommandHelper.run_command(['mkdir', '-p', f'../out/{self.config_number}'], new_env, self.main_config.show_command_output)
-            CommandHelper.run_command(['cp', 'EdifymRunner', f'../out/{self.config_number}'], new_env, self.main_config.show_command_output)
+            CommandHelper.run_command(['mkdir', '-p', f'./builds/{self.config_number}'], new_env, self.main_config.show_command_output)
+
+            CommandHelper.run_command(['cmake', '../../'], new_env, self.main_config.show_command_output, f'./EdifymRunner/builds/{self.config_number}')
+            CommandHelper.run_command(['make'], new_env, self.main_config.show_command_output, f'./EdifymRunner/builds/{self.config_number}')
+            CommandHelper.run_command(['mkdir', '-p', f'../../../out/{self.config_number}'], new_env, self.main_config.show_command_output, f'./EdifymRunner/builds/{self.config_number}')
+            CommandHelper.run_command(['cp', 'EdifymRunner', f'../../../out/{self.config_number}'], new_env, self.main_config.show_command_output, f'./EdifymRunner/builds/{self.config_number}')
 
             JsonHelper.object_as_json_to_file(f'out/{self.config_number}/benchmark.json', self.benchmark)
             JsonHelper.object_as_json_to_file(f'out/{self.config_number}/config.json', self.main_config)

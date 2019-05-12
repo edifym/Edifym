@@ -47,6 +47,7 @@ if __name__ == "__main__":
     main_config = MainConfig(main_data)
     benchmark_config = BenchmarkConfig(benchmark_data)
     q = Queue()
+    q.cancel_join_thread()
 
     signal.signal(signal.SIGINT, signal_handler)
 
@@ -64,22 +65,14 @@ if __name__ == "__main__":
             print('done compiling')
             break'''
 
-    procs = []
-
     for i in range(0, main_config.num_workers - 1):
         p = Process(target=queue_worker, args=(q, i, shm_quit))
         p.start()
-        procs.append(p)
 
     queue_worker(q, main_config.num_workers, shm_quit)
 
-    if shm_quit.value:
-        sleep(1)
-        print('murdering self')
-        for p in procs:
-            p.terminate()
-        sys.exit()
 
+    print('Goodbye.')
     #GenerateRunSimulationsTask(main_config, q).execute()
 
     # run simulations multithreaded
