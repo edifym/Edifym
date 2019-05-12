@@ -6,5 +6,5 @@
   "num_cpus": 2,
   "num_workers": 4,
   "benchmark": "papabench1",
-  "show_command_output": true
+  "show_command_output": false
 }

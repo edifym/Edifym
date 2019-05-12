@@ -11,7 +11,6 @@ import json
 import sys
 from queue import Empty
 import signal
-from time import sleep
 
 from MainConfig import MainConfig
 from BenchmarkConfig import BenchmarkConfig
@@ -27,18 +26,21 @@ def signal_handler(sig, frame):
     shm_quit.value = True
 
 
-def queue_worker(q, id, local_shm_quit):
-    print(f'starting worker {id}')
+def queue_worker(queue: Queue, worker_id: int, local_shm_quit):
+    print(f'starting worker {worker_id}')
 
     while not local_shm_quit.value:
         try:
-            task = q.get(False, 1000)
+            task = queue.get(True, 0.5)
             task.execute()
         except Empty:
             print('No more tasks for worker {id}')
             break
+        except:
+            print(f'Unexpected exception {sys.exc_info()[0]}')
+            break
 
-    print(f'stopping worker {id} {local_shm_quit.value}')
+    print(f'stopping worker {worker_id} {local_shm_quit.value}')
 
 
 if __name__ == "__main__":
@@ -54,16 +56,6 @@ if __name__ == "__main__":
     benchmark, = [bench for bench in benchmark_config.benchmarks if bench.name == main_config.benchmark]
 
     GenerateCompilableSimulationsTask(main_config, benchmark, q).execute()
-
-    # compiling single threaded
-
-    '''while not shm_quit.value:
-        try:
-            task = q.get(False, 1000)
-            task.execute()
-        except Empty:
-            print('done compiling')
-            break'''
 
     for i in range(0, main_config.num_workers - 1):
         p = Process(target=queue_worker, args=(q, i, shm_quit))
