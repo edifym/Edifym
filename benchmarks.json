@@ -1,27 +1,31 @@
 {
   "papabench1": {
     "tasks": [{
-      "name": "autopilot",
-      "values": [{
-        "name": "max_m",
-        "range": [1, 2]
-      },{
-        "name": "max_y",
-        "range": [1, 2]
-      },{
-        "name": "max_z",
-        "range": [1]
-      }]
+      "name": "test_ppm_task"
     },{
-      "name": "flybywire"
-    }]
-  },
-  "papabench2": {
-    "tasks": [{
-      "name": "autopilot"
+      "name": "servo_transmit"
     },{
-      "name": "flybywire",
-      "depends": "autopilot"
+      "name": "send_data_to_autopilot_task"
+    },{
+      "name": "check_mega128_values_task"
+    },{
+      "name": "check_failsafe_task"
+    },{
+      "name": "stabilisation_task"
+    },{
+      "name": "reporting_task"
+    },{
+      "name": "receive_gps_data_task"
+    },{
+      "name": "radio_control_task"
+    },{
+      "name": "navigation_task"
+    },{
+      "name": "link_fbw_send"
+    },{
+      "name": "altitude_control_task"
+    },{
+      "name": "altitude_control_task"
     }]
   }
 }

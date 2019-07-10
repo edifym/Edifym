@@ -26,7 +26,7 @@ def signal_handler(sig, frame):
     shm_quit.value = True
 
 
-def queue_worker(queue: Queue, worker_id: int, local_shm_quit):
+def queue_worker(queue: Queue, worker_id: int, local_shm_quit: Value):
     print(f'starting worker {worker_id}')
 
     while not local_shm_quit.value:
@@ -55,7 +55,10 @@ if __name__ == "__main__":
 
     benchmark, = [bench for bench in benchmark_config.benchmarks if bench.name == main_config.benchmark]
 
-    GenerateCompilableSimulationsTask(main_config, benchmark, q).execute()
+    GenerateCompilableSimulationsTask(main_config, benchmark, q, shm_quit).execute()
+
+    if shm_quit.value:
+        sys.exit(1)
 
     for i in range(0, main_config.num_workers - 1):
         p = Process(target=queue_worker, args=(q, i, shm_quit))
@@ -63,14 +66,16 @@ if __name__ == "__main__":
 
     queue_worker(q, main_config.num_workers, shm_quit)
 
+    if shm_quit.value:
+        sys.exit(1)
 
-    print('Goodbye.')
-    #GenerateRunSimulationsTask(main_config, q).execute()
+    GenerateRunSimulationsTask(main_config, q, shm_quit).execute()
 
-    # run simulations multithreaded
+    if shm_quit.value:
+        sys.exit(1)
 
-    '''for i in range(0, main_config.num_workers - 1):
-        p = Process(target=queue_worker, args=(q, i))
+    for i in range(0, main_config.num_workers - 1):
+        p = Process(target=queue_worker, args=(q, i, shm_quit))
         p.start()
 
-    queue_worker(q, main_config.num_workers)'''
+    queue_worker(q, main_config.num_workers, shm_quit)

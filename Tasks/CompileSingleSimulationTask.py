@@ -17,7 +17,7 @@ class CompileSingleSimulationTask(ITask):
         self.config_number = config_number
 
     def execute(self):
-        print('Starting CompileSingleSimulationTask')
+        print(f'Starting CompileSingleSimulationTask {self.config_number}')
         try:
             new_env = CommandHelper.create_environment_from_config(self.main_config, self.benchmark)
             CommandHelper.run_command(['mkdir', '-p', f'./builds/{self.config_number}'], new_env, self.main_config.show_command_output)
@@ -40,4 +40,4 @@ class CompileSingleSimulationTask(ITask):
         except:
             print(f'Error> {sys.exc_info()[0]}')
 
-        print('CompileSingleSimulationTask done')
+        print(f'CompileSingleSimulationTask done {self.config_number}')

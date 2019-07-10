@@ -11,6 +11,8 @@ SET(CMAKE_SYSTEM_VERSION 1)
 SET(CMAKE_C_COMPILER   aarch64-linux-gnu-gcc)
 SET(CMAKE_CXX_COMPILER aarch64-linux-gnu-g++)
 
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2 ")
+
 if(NOT DEFINED ENV{M5_DIR})
     message(FATAL_ERROR "Please set the environment variable M5_DIR to where gem5/util/m5 is located.")
 endif()

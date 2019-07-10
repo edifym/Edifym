@@ -1,5 +1,5 @@
 import itertools
-from multiprocessing import Queue
+from multiprocessing import Queue, Value
 
 import MainConfig
 from Tasks.ITask import ITask
@@ -12,10 +12,12 @@ from Tasks.RunSingleSimulationTask import RunSingleSimulationTask
 class GenerateRunSimulationsTask(ITask):
     main_config: MainConfig
     q: Queue
+    shm_quit: Value
 
-    def __init__(self, main_config: MainConfig, q: Queue):
+    def __init__(self, main_config: MainConfig, q: Queue, shm_quit: Value):
         self.main_config = main_config
         self.q = q
+        self.shm_quit = shm_quit
 
     @staticmethod
     def get_immediate_subdirectories(a_dir: str) -> List[str]:
@@ -60,5 +62,8 @@ class GenerateRunSimulationsTask(ITask):
             new_task = RunSingleSimulationTask(self.main_config, self.main_config.num_cpus, sub_simulation, id)
             self.q.put(new_task)
             id += 1
+
+            if self.shm_quit.value:
+                break
 
         print('GenerateRunSimulationsTask done')

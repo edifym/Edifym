@@ -35,9 +35,19 @@ void print_time() {
 }
 
 int main( void ) {
+#if TASK_SIZE == 0
+    return 0;
+#else
     functionPtr function;
     char *ordered_task_names[TASK_SIZE] = TASKS;
     printf("Started with TASK_SIZE %i\n", TASK_SIZE);
+
+    if(tasks_to_execute->function == NULL) {
+        printf("Horrible disaster function is NULL for %s\n", tasks_to_execute->name);
+        return -1;
+    }
+
+    tasks_to_execute->function();
 
     for (int i = 0; i < TASK_SIZE; i++) {
         task* t = find_task_by_name(&tasks_to_execute, ordered_task_names[i]);
@@ -48,22 +58,19 @@ int main( void ) {
             return -1;
         }
 
-        if(t->init == NULL) {
-            printf("Horrible disaster init is NULL For task %s\n", t->name);
-            return -1;
-        }
-
         if(t->function == NULL) {
             printf("Horrible disaster function is NULL for task %s\n", t->name);
             return -1;
         }
 
-        t->init(1, 100);
-        print_time();
+        if(t->init != NULL) {
+            t->init(1, 100);
+        }
+
         m5_reset_stats(0, 0);
         t->function();
         m5_dump_stats(0, 0);
-        print_time();
     }
     return 0;
+#endif
 }

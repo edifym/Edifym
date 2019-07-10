@@ -19,7 +19,7 @@ class RunSingleSimulationTask(ITask):
         self.id = id
 
     def execute(self):
-        print('Starting RunSingleSimulationTask')
+        print(f'Starting RunSingleSimulationTask {self.id}')
         try:
             if len(self.run_numbers) != self.num_cpus:
                 raise AssertionError(f'length of run_numbers ({len(self.run_numbers)}) '
@@ -28,10 +28,10 @@ class RunSingleSimulationTask(ITask):
             workload = ''.join(map(lambda num: f'../{num}/EdifymRunner;', self.run_numbers))
             workload = workload[:-1]  # remove trailing ;
 
-            CommandHelper.run_command(['mkdir', '-p', f'../out/run_{self.id}'], {})
+            CommandHelper.run_command(['mkdir', '-p', f'../out/run_{self.id}'], {}, self.main_config.show_command_output)
             CommandHelper.run_command([self.main_config.gem5_executable_path, self.main_config.gem5_se_script_path,
-                                       '--cpu-type', 'DerivO3CPU', '--caches', '--num-l2caches=0', '--num-l3caches=0',
-                                       '-n', str(self.num_cpus), '-c', workload], {}, f'./out/run_{self.id}')
+                                       '--cpu-type', 'HPI', '--caches', '--num-l2caches=0', '--num-l3caches=0',
+                                       '-n', str(self.num_cpus), '-c', workload], {}, self.main_config.show_command_output, f'./out/run_{self.id}')
 
             JsonHelper.object_as_json_to_file(f'./out/run_{self.id}/run_numbers.json', self.run_numbers)
         except OSError as e:
@@ -44,4 +44,4 @@ class RunSingleSimulationTask(ITask):
             print(f'AssertionError> {e}')
         except:
             print(f'Error> {sys.exc_info()[0]}')
-        print('RunSingleSimulationTask done')
+        print(f'RunSingleSimulationTask done {self.id}')
