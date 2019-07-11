@@ -4,7 +4,7 @@ import itertools
 
 class Value:
     name: str
-    value: int
+    value: List[int]
 
     def __init__(self, name, value):
         self.name = name
