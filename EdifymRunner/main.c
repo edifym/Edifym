@@ -42,12 +42,12 @@ int main( void ) {
     char *ordered_task_names[TASK_SIZE] = TASKS;
     printf("Started with TASK_SIZE %i\n", TASK_SIZE);
 
-    if(tasks_to_execute->function == NULL) {
-        printf("Horrible disaster function is NULL for %s\n", tasks_to_execute->name);
+    if(tasks_to_execute.function == NULL) {
+        printf("Horrible disaster function is NULL for %s\n", tasks_to_execute.name);
         return -1;
     }
 
-    tasks_to_execute->function();
+    tasks_to_execute.function();
 
     for (int i = 0; i < TASK_SIZE; i++) {
         task* t = find_task_by_name(&tasks_to_execute, ordered_task_names[i]);

@@ -7,6 +7,10 @@ class MainConfig:
     num_workers: int = 0
     benchmark: str = ""
     show_command_output: bool = False
+    src_dir: str = ""
+    build_dir: str = ""
+    out_dir: str = ""
+    stats_dir: str = ""
 
     def __init__(self, json_data):
         self.m5_path = json_data['m5_path']
@@ -17,3 +21,7 @@ class MainConfig:
         self.num_workers = json_data['num_workers']
         self.benchmark = json_data['benchmark']
         self.show_command_output = json_data['show_command_output']
+        self.src_dir = json_data['src_dir']
+        self.build_dir = json_data['build_dir']
+        self.out_dir = json_data['out_dir']
+        self.stats_dir = json_data['stats_dir']

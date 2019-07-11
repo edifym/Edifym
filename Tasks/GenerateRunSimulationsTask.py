@@ -22,8 +22,8 @@ class GenerateRunSimulationsTask(ITask):
     @staticmethod
     def get_immediate_subdirectories(a_dir: str) -> List[str]:
         dirs = os.listdir(a_dir)
-        eqcheck = dirs[0][0] != 'r'
-        print(f'dirs: {dirs} {dirs[0][0]} {eqcheck}')
+        #eqcheck = dirs[0][0] != 'r'
+        #print(f'dirs: {dirs} {dirs[0][0]} {eqcheck}')
         subdirs = []
 
         for name in dirs:
@@ -49,7 +49,7 @@ class GenerateRunSimulationsTask(ITask):
         print('Starting GenerateRunSimulationsTask')
 
         id = 1
-        ids = list(map(int, self.get_immediate_subdirectories('out')))
+        ids = list(map(int, self.get_immediate_subdirectories(self.main_config.out_dir)))
 
         if not ids:
             print('no out directories detected, aborting')

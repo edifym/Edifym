@@ -17,18 +17,19 @@ class CompileSingleSimulationTask(ITask):
         self.config_number = config_number
 
     def execute(self):
-        print(f'Starting CompileSingleSimulationTask {self.config_number}')
+        #print(f'Starting CompileSingleSimulationTask {self.config_number}')
         try:
             new_env = CommandHelper.create_environment_from_config(self.main_config, self.benchmark)
-            CommandHelper.run_command(['mkdir', '-p', f'./builds/{self.config_number}'], new_env, self.main_config.show_command_output)
 
-            CommandHelper.run_command(['cmake', '../../'], new_env, self.main_config.show_command_output, f'./EdifymRunner/builds/{self.config_number}')
-            CommandHelper.run_command(['make'], new_env, self.main_config.show_command_output, f'./EdifymRunner/builds/{self.config_number}')
-            CommandHelper.run_command(['mkdir', '-p', f'../../../out/{self.config_number}'], new_env, self.main_config.show_command_output, f'./EdifymRunner/builds/{self.config_number}')
-            CommandHelper.run_command(['cp', 'EdifymRunner', f'../../../out/{self.config_number}'], new_env, self.main_config.show_command_output, f'./EdifymRunner/builds/{self.config_number}')
+            CommandHelper.run_command(['mkdir', '-p', f'{self.main_config.build_dir}/{self.config_number}'], new_env, self.main_config.show_command_output)
+            CommandHelper.run_command(['cmake', f'{self.main_config.src_dir}'], new_env, self.main_config.show_command_output, f'{self.main_config.build_dir}/{self.config_number}')
+            CommandHelper.run_command(['make'], new_env, self.main_config.show_command_output, f'{self.main_config.build_dir}/{self.config_number}')
+            CommandHelper.run_command(['mkdir', '-p', f'{self.main_config.out_dir}/{self.config_number}'], new_env, self.main_config.show_command_output)
+            CommandHelper.run_command(['mv', 'EdifymRunner', f'{self.main_config.out_dir}/{self.config_number}'], new_env, self.main_config.show_command_output, f'{self.main_config.build_dir}/{self.config_number}')
+            CommandHelper.run_command(['rm', '-rf', f'{self.main_config.build_dir}/{self.config_number}'], new_env, self.main_config.show_command_output)
 
-            JsonHelper.object_as_json_to_file(f'out/{self.config_number}/benchmark.json', self.benchmark)
-            JsonHelper.object_as_json_to_file(f'out/{self.config_number}/config.json', self.main_config)
+            JsonHelper.object_as_json_to_file(f'{self.main_config.out_dir}/{self.config_number}/benchmark.json', self.benchmark)
+            JsonHelper.object_as_json_to_file(f'{self.main_config.out_dir}/{self.config_number}/config.json', self.main_config)
         except OSError as e:
             print(f'OSError> {e.errno} {e.strerror} {e.filename}')
         except TypeError as e:

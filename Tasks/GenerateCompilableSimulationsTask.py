@@ -46,12 +46,14 @@ class GenerateCompilableSimulationsTask(ITask):
 
         for sub_benchmark in self.produce_permutations():
             #print(f'{i}: going to compile {sub_benchmark}')
-            #new_task = CompileSingleSimulationTask(self.main_config, sub_benchmark, i)
-            #self.q.put(new_task)
+            new_task = CompileSingleSimulationTask(self.main_config, sub_benchmark, i)
+            self.q.put(new_task)
             i += 1
+
             if i % 1_000_000 == 0:
                 print(f'{i}')
-            if self.shm_quit.value:
+                
+            if i % 1_00 == 0 or self.shm_quit.value:
                 break
 
         print(f'GenerateCompilableSimulationsTask done {i}')

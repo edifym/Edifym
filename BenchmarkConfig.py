@@ -1,6 +1,7 @@
 from typing import List
 import itertools
 
+
 class Value:
     name: str
     value: int
@@ -11,6 +12,7 @@ class Value:
 
     def __str__(self):
         return "Value {%s %s}" % (self.name, self.value)
+
 
 class Task:
     name: str
