@@ -2,7 +2,9 @@
 #include "executable_task.h"
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/time.h>
+#include <assert.h>
 
 extern task tasks_to_execute;
 #define ENABLE_TRACE 0
@@ -34,20 +36,133 @@ void print_time() {
   printf("time: %i %li %li\n", ret, tv.tv_sec, tv.tv_usec);
 }
 
-int main( void ) {
-#if TASK_SIZE == 0
-    return 0;
-#else
-    functionPtr function;
-    char *ordered_task_names[TASK_SIZE] = TASKS;
-    printf("Started with TASK_SIZE %i\n", TASK_SIZE);
+char** str_split(char* a_str, const char a_delim)
+{
+    char** result    = 0;
+    size_t count     = 0;
+    char* tmp        = a_str;
+    char* last_comma = 0;
+    char delim[2];
+    delim[0] = a_delim;
+    delim[1] = 0;
+
+    /* Count how many elements will be extracted. */
+    while (*tmp)
+    {
+        if (a_delim == *tmp)
+        {
+            count++;
+            last_comma = tmp;
+        }
+        tmp++;
+    }
+
+    /* Add space for trailing token. */
+    count += last_comma < (a_str + strlen(a_str) - 1);
+
+    /* Add space for terminating null string so caller
+       knows where the list of returned strings ends. */
+    count++;
+
+    result = malloc(sizeof(char*) * count);
+
+    if (result)
+    {
+        size_t idx  = 0;
+        char* token = strtok(a_str, delim);
+
+        while (token)
+        {
+            assert(idx < count);
+            *(result + idx++) = strdup(token);
+            token = strtok(0, delim);
+        }
+        assert(idx == count - 1);
+        *(result + idx) = 0;
+    }
+
+    return result;
+}
+
+int main( int argc, char *argv[] ) {
+
+    if(argc == 1) {
+        printf("USAGE: EdifymRunner task_size task_names task1_args taskn_args\nEXAMPLE: EdifymRunner 2 autopilot;flybywire 2;2 1\n\nTASKS:\n");
+        print_all_task_names(&tasks_to_execute);
+        return -1;
+    }
+
+    char *end;
+
+    long task_size = strtol(argv[1], &end, 10);
+
+    if(argc != 3 + task_size) {
+        printf("USAGE: EdifymRunner task_size task_names task1_args taskn_args\nEXAMPLE: EdifymRunner 2 autopilot;flybywire 2;2 1\n\nTASKS:\n");
+        print_all_task_names(&tasks_to_execute);
+        return -1;
+    }
 
     if(tasks_to_execute.function == NULL) {
         printf("Horrible disaster function is NULL for %s\n", tasks_to_execute.name);
         return -1;
     }
 
-    tasks_to_execute.function();
+    char** tasks = str_split(argv[2], ';');
+
+    if(!tasks) {
+        printf("USAGE: EdifymRunner task_size task_names task1_args taskn_args\nEXAMPLE: EdifymRunner 2 autopilot;flybywire 2;2 1\n\nTASKS:\n");
+        print_all_task_names(&tasks_to_execute);
+        return -1;
+    }
+
+    for (int i = 0; *(tasks + i); i++) {
+        task* t = find_task_by_name(&tasks_to_execute, *(tasks + i));
+
+        if(t == NULL) {
+            printf("Horrible disaster trying to find task %s\n", *(tasks + i));
+            print_all_task_names(&tasks_to_execute);
+            return -1;
+        }
+
+        if(t->function == NULL) {
+            printf("Horrible disaster function is NULL for task %s\n", t->name);
+            return -1;
+        }
+
+        if(t->init != NULL) {
+
+            char **task_args = str_split(argv[3 + i], ';');
+            int count = 0;
+            int args[count];
+
+            for (int i = 0; *(task_args + i); i++) {
+                args[i] = strtol(*(task_args + i), &end, 10);
+                count++;
+            }
+
+            t->init(count, args);
+
+            for (int i = 0; *(task_args + i); i++) {
+                free(*(task_args + i));
+            }
+
+            free(task_args);
+        }
+
+        m5_reset_stats(0, 0);
+        t->function();
+        m5_dump_stats(0, 0);
+    }
+
+    for (int i = 0; *(tasks + i); i++) {
+        free(*(tasks + i));
+    }
+
+    free(tasks);
+
+    return 0;
+
+    /*tasks_to_execute.function();
 
     for (int i = 0; i < TASK_SIZE; i++) {
         task* t = find_task_by_name(&tasks_to_execute, ordered_task_names[i]);
@@ -71,6 +186,5 @@ int main( void ) {
         t->function();
         m5_dump_stats(0, 0);
     }
-    return 0;
-#endif
+    return 0;*/
 }

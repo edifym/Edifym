@@ -6,7 +6,7 @@
 #define EDIFYMRUNNER_EXECUTABLE_TASK_H
 
 typedef int (*functionPtr)();
-typedef int (*initFunctionPtr)(int count, ...);
+typedef int (*initFunctionPtr)(int count, int *task_args);
 
 typedef struct task {
     char *name;
