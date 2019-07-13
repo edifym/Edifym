@@ -23,25 +23,27 @@ shm_quit = Value('b', False)
 
 def signal_handler(sig, frame):
     print('Quitting all remaining workers')
+    global shm_quit
     shm_quit.value = True
 
 
-def queue_worker(queue: Queue, worker_id: int, local_shm_quit: Value):
+def queue_worker(queue: Queue, worker_id: int):
+    global shm_quit
     sleep(5)
     print(f'starting worker {worker_id}')
 
-    while not local_shm_quit.value:
+    while not shm_quit.value:
         try:
             task = queue.get(True, 0.5)
             task.execute()
         except Empty:
-            print('No more tasks for worker {id}')
+            print(f'No more tasks for worker {id}')
             break
         except:
             print(f'Unexpected exception {sys.exc_info()[0]}')
             break
 
-    print(f'stopping worker {worker_id} {local_shm_quit.value}')
+    print(f'stopping worker {worker_id} {shm_quit.value}')
 
 
 if __name__ == "__main__":
@@ -57,7 +59,7 @@ if __name__ == "__main__":
     benchmark, = [bench for bench in benchmark_config.benchmarks if bench.name == main_config.benchmark]
 
     for i in range(0, main_config.num_workers - 1):
-        p = Process(target=queue_worker, args=(q, i, shm_quit))
+        p = Process(target=queue_worker, args=(q, i))
         p.start()
 
     GenerateThreadsSimulationsTask(main_config, benchmark, q, shm_quit).execute()
@@ -65,4 +67,4 @@ if __name__ == "__main__":
     if shm_quit.value:
         sys.exit(1)
 
-    queue_worker(q, main_config.num_workers, shm_quit)
+    queue_worker(q, main_config.num_workers)
