@@ -13,7 +13,7 @@ class CommandHelper:
         os.setpgrp()
 
     @staticmethod
-    def run_command(command: List[str], new_env: Dict[str, str], show_output: bool = True, cwd: str = './EdifymRunner'):
+    def run_command(command: List[str], new_env: Dict[str, str], show_output: bool = True, show_error: bool = True, cwd: str = './EdifymRunner'):
             proc = subprocess.Popen(command, cwd=cwd, env=new_env, stdout=subprocess.PIPE, stderr=subprocess.PIPE, preexec_fn=CommandHelper.preexec_function)
             if show_output:
                 args = ' '.join(proc.args)
@@ -23,7 +23,7 @@ class CommandHelper:
 
             if show_output and output:
                 print(f'{command[0]} output> {proc.returncode} {output}')
-            if error:
+            if show_error and error:
                 print(f'{command[0]} error> {proc.returncode} {error.strip()}')
 
     @staticmethod

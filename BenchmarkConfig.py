@@ -4,14 +4,17 @@ import itertools
 
 class Value:
     name: str
-    value: List[int]
+    values: List[int]
 
-    def __init__(self, name, value):
+    def __init__(self, name, values):
         self.name = name
-        self.value = value
+        self.values = values
 
     def __str__(self):
-        return "Value {%s %s}" % (self.name, self.value)
+        return "Value {%s %s}" % (self.name, self.values)
+
+    def __repr__(self):
+        return self.__str__()
 
 
 class Task:
@@ -30,6 +33,9 @@ class Task:
     def __str__(self):
         return "Task {%s %s %s}" % (self.name, self.depends, self.values)
 
+    def __repr__(self):
+        return self.__str__()
+
 
 class Benchmark:
     name: str
@@ -41,6 +47,9 @@ class Benchmark:
 
     def __str__(self):
         return "Benchmark {%s, [%s]}" % (self.name, ', '.join(map(str, self.tasks)))
+
+    def __repr__(self):
+        return self.__str__()
 
 
 class BenchmarkConfig:
@@ -59,26 +68,28 @@ class BenchmarkConfig:
 
                 if 'values' in json_task.keys():
                     json_values = json_task['values']
-                    values: List[List[Value]] = []
+                    values: List[Value] = []
 
                     for val in json_values:
-                        print(val)
                         name = val['name']
-                        range = val['range']
-                        subvalues: List[Value] = []
+                        range = val['values']
+                        subvalues: List[int] = []
 
                         for r in range:
-                            subvalues.append(Value(name, r))
+                            subvalues.append(r)
 
-                        values.append(subvalues)
+                        values.append(Value(name, subvalues))
 
-                    for combination_value in itertools.product(*values):
-                        print(combination_value)
-                        tasks.append(Task(json_task['name'], depends, combination_value))
+                    tasks.append(Task(json_task['name'], depends, values))
                 else:
                     tasks.append(Task(json_task['name'], depends))
+
+            #print(f'json tasks: {tasks}')
 
             self.benchmarks.append(Benchmark(benchmark_name, tasks))
 
     def __str__(self):
         return "BenchmarkConfig {[%s]}" % ', '.join(map(str, self.benchmarks))
+
+    def __repr__(self):
+        return self.__str__()

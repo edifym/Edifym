@@ -113,11 +113,8 @@
     },{
       "name": "link_fbw_send",
       "values": [{
-        "name": "pprz_mode",
-        "values": [0, 1, 2, 3, 4]
-      },{
-        "name": "vertical_mode",
-        "values": [0, 1, 2, 3, 4]
+        "name": "spi_cur_slave",
+        "values": [0, 1, 2]
       }]
     },{
       "name": "climb_control_task",

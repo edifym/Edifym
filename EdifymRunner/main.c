@@ -96,6 +96,10 @@ int main( int argc, char *argv[] ) {
 
     long task_size = strtol(argv[1], &end, 10);
 
+    if(task_size == 0) {
+        return 0;
+    }
+
     if(argc != 3 + task_size) {
         printf("USAGE: EdifymRunner task_size task_names task1_args taskn_args\nEXAMPLE: EdifymRunner 2 autopilot;flybywire 2;2 1\n\nTASKS:\n");
         print_all_task_names(&tasks_to_execute);

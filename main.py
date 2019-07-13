@@ -14,9 +14,9 @@ import signal
 
 from MainConfig import MainConfig
 from BenchmarkConfig import BenchmarkConfig
-from Tasks.GenerateCompilableSimulationsTask import GenerateCompilableSimulationsTask
-from Tasks.GenerateRunSimulationsTask import GenerateRunSimulationsTask
+from Tasks.GenerateThreadsSimulationsTask import GenerateThreadsSimulationsTask
 from multiprocessing import Process, Queue, Value
+from time import sleep
 
 shm_quit = Value('b', False)
 
@@ -27,6 +27,7 @@ def signal_handler(sig, frame):
 
 
 def queue_worker(queue: Queue, worker_id: int, local_shm_quit: Value):
+    sleep(5)
     print(f'starting worker {worker_id}')
 
     while not local_shm_quit.value:
@@ -55,27 +56,13 @@ if __name__ == "__main__":
 
     benchmark, = [bench for bench in benchmark_config.benchmarks if bench.name == main_config.benchmark]
 
-    GenerateCompilableSimulationsTask(main_config, benchmark, q, shm_quit).execute()
-
-    if shm_quit.value:
-        sys.exit(1)
-
     for i in range(0, main_config.num_workers - 1):
         p = Process(target=queue_worker, args=(q, i, shm_quit))
         p.start()
 
-    queue_worker(q, main_config.num_workers, shm_quit)
+    GenerateThreadsSimulationsTask(main_config, benchmark, q, shm_quit).execute()
 
     if shm_quit.value:
         sys.exit(1)
-
-    GenerateRunSimulationsTask(main_config, q, shm_quit).execute()
-
-    if shm_quit.value:
-        sys.exit(1)
-
-    for i in range(0, main_config.num_workers - 1):
-        p = Process(target=queue_worker, args=(q, i, shm_quit))
-        p.start()
 
     queue_worker(q, main_config.num_workers, shm_quit)
