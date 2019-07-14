@@ -34,10 +34,10 @@ class GenerateThreadsSimulationsTask(ITask):
         print('produce_task_permutations')
         for L in range(0, len(self.benchmark.tasks) + 1):
             count = 0
-            print('L: %s' % L)
+            print(f'L: {L}')
             for sub_benchmark in itertools.permutations(self.benchmark.tasks, L):
                 if count > 1_000 or self.shm_quit.value:
-                    print('breaking at %s', count)
+                    print(f'breaking at {count}')
                     break
 
                 count += 1
@@ -52,7 +52,7 @@ class GenerateThreadsSimulationsTask(ITask):
             yield workloads
 
     def execute(self):
-        print('Starting GenerateThreadsSimulationsTask %s' % len(self.benchmark.tasks))
+        print(f'Starting GenerateThreadsSimulationsTask {len(self.benchmark.tasks)}')
 
         run_id = 1
         count_checked = 0
@@ -62,7 +62,7 @@ class GenerateThreadsSimulationsTask(ITask):
             count_checked += 1
 
             if count_checked % 1_000_000 == 0:
-                print('Checked %s tasks, added %s tasks' % (count_checked, run_id - 1))
+                print(f'Checked {count_checked} tasks, added {run_id - 1} tasks')
 
             if sum(map(len, task_permutation)) != len(self.benchmark.tasks):
                 continue
@@ -94,6 +94,7 @@ class GenerateThreadsSimulationsTask(ITask):
 
                 run_args.append(args)
 
+            #print(f'Running {run_args} {run_id}')
             new_task = RunSingleSimulationTask(self.main_config, self.main_config.num_cpus, run_args, run_id)
             self.q.put(new_task)
             run_id += 1

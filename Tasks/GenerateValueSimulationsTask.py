@@ -35,11 +35,12 @@ class GenerateValueSimulationsTask(ITask):
         print('produce_task_permutations')
         for L in range(0, len(self.benchmark.tasks) + 1):
             count = 0
-            print('L: %s', L)
+            print(f'L: {L}')
             for sub_benchmark in itertools.permutations(self.benchmark.tasks, L):
+                #print(f'sub_benchmark: {sub_benchmark}')
 
                 if count > 10 or self.shm_quit.value:
-                    print('breaking at %s', count)
+                    print(f'breaking at {count}')
                     break
 
                 count += 1
@@ -48,8 +49,10 @@ class GenerateValueSimulationsTask(ITask):
 
     def produce_workload_permutations(self, tasks: Iterator[List[Task]]) -> Iterator[List[Workload]]:
         for workloads in itertools.permutations(tasks, self.main_config.num_cpus):
+            print(f'workloads: {workloads}')
             ret: List[Workload] = []
             for workload in workloads:
+                #print(f'workload: {workload}')
                 if workload:
                     tempvals = []
                     for task in workload:
@@ -62,6 +65,7 @@ class GenerateValueSimulationsTask(ITask):
                             tempvals.append([0])
                     if tempvals:
                         values = list(itertools.product(*tempvals))
+                        #print(f'values: {values} {tempvals} ')
                         ret.append(Workload(workload, values))
                     else:
                         ret.append(Workload([], []))
@@ -74,7 +78,7 @@ class GenerateValueSimulationsTask(ITask):
             yield ret
 
     def execute(self):
-        print('Starting GenerateValueSimulationsTask %s' % len(self.benchmark.tasks))
+        print(f'Starting GenerateValueSimulationsTask {len(self.benchmark.tasks)}')
 
         run_id = 1
         count = 0
@@ -102,6 +106,7 @@ class GenerateValueSimulationsTask(ITask):
 
                 run_args.append(args)
 
+            print(f'Running {run_args} {run_id}')
             new_task = RunSingleSimulationTask(self.main_config, self.main_config.num_cpus, run_args, run_id)
             self.q.put(new_task)
             run_id += 1

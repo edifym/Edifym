@@ -21,20 +21,20 @@ def signal_handler(sig, frame):
 def queue_worker(queue: Queue, worker_id: int):
     global shm_quit
     sleep(5)
-    print('starting worker %s' % worker_id)
+    print(f'starting worker {worker_id}')
 
     while not shm_quit.value:
         try:
             task = queue.get(True, 0.5)
             task.execute()
         except Empty:
-            print('No more tasks for worker %s', worker_id)
+            print(f'No more tasks for worker {worker_id}')
             break
         except:
-            print('Unexpected exception %s' % sys.exc_info()[0])
+            print(f'Unexpected exception {sys.exc_info()[0]}')
             break
 
-    print('stopping worker %s %s' % (worker_id, shm_quit.value))
+    print(f'stopping worker {worker_id} {shm_quit.value}')
 
 
 if __name__ == "__main__":

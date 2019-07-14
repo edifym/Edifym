@@ -20,26 +20,26 @@ def signal_handler(sig, frame):
 
 def queue_worker(dir_queue: Queue, totals_queue: Queue, worker_id: int):
     global shm_quit
-    print('starting worker %s' % worker_id)
+    print(f'starting worker {worker_id}')
 
     while not shm_quit.value:
         try:
             run_dir = dir_queue.get(True, 0.5)
             #print(run_dir)
-            CommandHelper.run_command(['mkdir', run_dir], {}, main_config.show_command_output, main_config.show_command_error, main_config.out_dir)
-            CommandHelper.run_command([main_config.zstd, '-d', '-f', '%s/%s/stats.txt.zst' % (main_config.stats_dir, run_dir), '-o', 'stats.txt'], {}, main_config.show_command_output, main_config.show_command_error, '%s/%s' % (main_config.out_dir, run_dir))
-            stats = CommandHelper.run_command_output(['awk', '/sim_sec/ {print $2}', 'stats.txt'], {}, '%s/%s' % (main_config.out_dir, run_dir)).splitlines()
-            CommandHelper.run_command(['rm', '-rf', run_dir], {}, main_config.show_command_output, main_config.show_command_error, main_config.out_dir)
+            CommandHelper.run_command(['mkdir', f'{run_dir}'], {}, main_config.show_command_output, main_config.show_command_error, f'{main_config.out_dir}')
+            CommandHelper.run_command([main_config.zstd, '-d', '-f', f'{main_config.stats_dir}/{run_dir}/stats.txt.zst', '-o', 'stats.txt'], {}, main_config.show_command_output, main_config.show_command_error, f'{main_config.out_dir}/{run_dir}')
+            stats = CommandHelper.run_command_output(['awk', '/sim_sec/ {print $2}', f'stats.txt'], {}, f'{main_config.out_dir}/{run_dir}').splitlines()
+            CommandHelper.run_command(['rm', '-rf', f'{run_dir}'], {}, main_config.show_command_output, main_config.show_command_error, f'{main_config.out_dir}')
 
             totals_queue.put(stats[-1])
         except Empty:
-            print('No more tasks for worker %s', worker_id)
+            print(f'No more tasks for worker {worker_id}')
             break
         except:
-            print('Unexpected exception %s' % sys.exc_info()[0])
+            print(f'Unexpected exception {sys.exc_info()[0]}')
             break
 
-    print('stopping worker %s %s' % (worker_id, shm_quit.value))
+    print(f'stopping worker {worker_id} {shm_quit.value}')
 
 
 def get_immediate_subdirectories(a_dir: str) -> List[str]:
@@ -85,7 +85,7 @@ if __name__ == "__main__":
             print('No more tasks for main')
             break
         except:
-            print('Unexpected exception %s' % sys.exc_info()[0])
+            print(f'Unexpected exception {sys.exc_info()[0]}')
             break
 
     vals_dict = {}
