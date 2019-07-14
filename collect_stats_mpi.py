@@ -80,8 +80,8 @@ if __name__ == "__main__":
                 vals_dict[val] += 1
             else:
                 vals_dict[val] = 1
-        print(max(totals))
-        print(min(totals))
+        print(max(flat_list))
+        print(min(flat_list))
         print(vals_dict)
     else:
         print(f'node {rank} done')

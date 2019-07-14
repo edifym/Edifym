@@ -12,9 +12,9 @@ class RunSingleSimulationTask(ITask):
     workloads: List[str]
     run_id: int
 
-    def __init__(self, main_config: MainConfig, num_cpus: int, workloads: List[str], run_id: int):
+    def __init__(self, main_config: MainConfig, workloads: List[str], run_id: int):
         self.main_config = main_config
-        self.num_cpus = num_cpus
+        self.num_cpus = main_config.num_cpus
         self.workloads = workloads
         self.run_id = run_id
 

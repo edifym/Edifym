@@ -20,14 +20,10 @@ def anydup(thelist):
 
 class GenerateThreadsSimulationsTask(ITask):
     main_config: MainConfig
-    q: Queue
-    shm_quit: Value
     benchmark: Benchmark
 
-    def __init__(self, main_config: MainConfig, benchmark: Benchmark, q: Queue, shm_quit: Value):
+    def __init__(self, main_config: MainConfig, benchmark: Benchmark):
         self.main_config = main_config
-        self.q = q
-        self.shm_quit = shm_quit
         self.benchmark = benchmark
 
     def produce_task_permutations(self) -> Iterator[List[Task]]:
@@ -36,7 +32,7 @@ class GenerateThreadsSimulationsTask(ITask):
             count = 0
             print(f'L: {L}')
             for sub_benchmark in itertools.permutations(self.benchmark.tasks, L):
-                if count > 1_000 or self.shm_quit.value:
+                if count > 1_000:
                     print(f'breaking at {count}')
                     break
 
@@ -46,9 +42,6 @@ class GenerateThreadsSimulationsTask(ITask):
 
     def produce_tasks_per_core_permutations(self, tasks: Iterator[List[Task]]) -> Iterator[List[List[Task]]]:
         for workloads in itertools.permutations(tasks, self.main_config.num_cpus):
-            if self.shm_quit.value:
-                break
-
             yield workloads
 
     def execute(self):
@@ -58,6 +51,7 @@ class GenerateThreadsSimulationsTask(ITask):
         count_checked = 0
         tasks = self.produce_task_permutations()
         task_per_core = self.produce_tasks_per_core_permutations(tasks)
+        runs_to_distribute = []
         for task_permutation in task_per_core:
             count_checked += 1
 
@@ -94,12 +88,8 @@ class GenerateThreadsSimulationsTask(ITask):
 
                 run_args.append(args)
 
-            #print(f'Running {run_args} {run_id}')
-            new_task = RunSingleSimulationTask(self.main_config, run_args, run_id)
-            self.q.put(new_task)
+            runs_to_distribute.append((run_args, run_id))
             run_id += 1
 
-            if self.shm_quit.value:
-                break
-
         print('GenerateThreadsSimulationsTask done')
+        return runs_to_distribute

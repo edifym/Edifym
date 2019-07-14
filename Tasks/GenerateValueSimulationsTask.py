@@ -107,7 +107,7 @@ class GenerateValueSimulationsTask(ITask):
                 run_args.append(args)
 
             print(f'Running {run_args} {run_id}')
-            new_task = RunSingleSimulationTask(self.main_config, self.main_config.num_cpus, run_args, run_id)
+            new_task = RunSingleSimulationTask(self.main_config, run_args, run_id)
             self.q.put(new_task)
             run_id += 1
             count += 1
