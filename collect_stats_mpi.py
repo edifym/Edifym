@@ -29,13 +29,12 @@ if __name__ == "__main__":
     totals = []
     runs = 0
 
-    one = os.path.isdir('/local')
-    two = os.path.isdir('/local/mdelang')
-    print(f'node {rank} /local exists {one} {two}')
+    one = os.path.isdir(main_config.out_dir)
+    print(f'node {rank} {main_config.out_dir} exists {one}')
 
-    if not two:
+    if not one:
         try:
-            os.mkdirs('/local/mdelang/out')
+            os.makedirs(main_config.out_dir, exist_ok=True)
         except Exception as inst:
             print(type(inst))
             print(inst.args)
@@ -74,10 +73,9 @@ if __name__ == "__main__":
 
     if rank == 0:
         flat_list = [item for sublist in newData for item in sublist]
-        print(f'master: {flat_list}')
 
         vals_dict = {}
-        for val in totals:
+        for val in flat_list:
             if val in vals_dict:
                 vals_dict[val] += 1
             else:
