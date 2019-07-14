@@ -84,8 +84,6 @@ class BenchmarkConfig:
                 else:
                     tasks.append(Task(json_task['name'], depends))
 
-            #print(f'json tasks: {tasks}')
-
             self.benchmarks.append(Benchmark(benchmark_name, tasks))
 
     def __str__(self):

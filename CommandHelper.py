@@ -17,14 +17,14 @@ class CommandHelper:
             proc = subprocess.Popen(command, cwd=cwd, env=new_env, stdout=subprocess.PIPE, stderr=subprocess.PIPE, preexec_fn=CommandHelper.preexec_function)
             if show_output:
                 args = ' '.join(proc.args)
-                print(f'executing {args}')
+                print('executing %s' % args)
 
             output, error = proc.communicate()
 
             if show_output and output:
-                print(f'{command[0]} output> {proc.returncode} {output}')
+                print('%s output> %s %s' % (command[0], proc.returncode, output))
             if show_error and error:
-                print(f'{command[0]} error> {proc.returncode} {error.strip()}')
+                print('%s error> %s %s' % (command[0], proc.returncode, error.strip()))
 
     @staticmethod
     def run_command_output(command: List[str], new_env: Dict[str, str], cwd: str = './EdifymRunner') -> str:
@@ -40,5 +40,5 @@ class CommandHelper:
         new_env['M5_DIR'] = config.m5_path
         new_env['LIBRARY_UNDER_TEST'] = config.library_name
         new_env['TASK_SIZE'] = str(len(benchmark.tasks))
-        new_env['TASKS'] = '{' + Slinkie(benchmark.tasks).map(lambda it: f'"{it.name}"').join(', ') + '}'
+        new_env['TASKS'] = '{' + Slinkie(benchmark.tasks).map(lambda it: it.name).join(', ') + '}'
         return new_env

@@ -30,7 +30,7 @@ if __name__ == "__main__":
 
     if rank == 0:
         data = get_immediate_subdirectories(main_config.stats_dir)
-        print(f'master data size {len(data)}')
+        print('master data size %s' % len(data))
         # dividing data into chunks
         chunks = [[] for _ in range(size)]
         for i, chunk in enumerate(data):
@@ -43,17 +43,17 @@ if __name__ == "__main__":
 
     totals = []
     for run_dir in data:
-        CommandHelper.run_command(['mkdir', f'{run_dir}'], {}, main_config.show_command_output, main_config.show_command_error, f'{main_config.out_dir}')
-        CommandHelper.run_command([main_config.zstd, '-d', '-f', f'{main_config.stats_dir}/{run_dir}/stats.txt.zst', '-o', 'stats.txt'], {}, main_config.show_command_output, main_config.show_command_error, f'{main_config.out_dir}/{run_dir}')
-        stats = CommandHelper.run_command_output(['awk', '/sim_sec/ {print $2}', f'stats.txt'], {}, f'{main_config.out_dir}/{run_dir}').splitlines()
-        CommandHelper.run_command(['rm', '-rf', f'{run_dir}'], {}, main_config.show_command_output, main_config.show_command_error, f'{main_config.out_dir}')
+        CommandHelper.run_command(['mkdir', run_dir], {}, main_config.show_command_output, main_config.show_command_error, main_config.out_dir)
+        CommandHelper.run_command([main_config.zstd, '-d', '-f', '%s/%s/stats.txt.zst' % (main_config.stats_dir, run_dir), '-o', 'stats.txt'], {}, main_config.show_command_output, main_config.show_command_error, '%s/%s' % (main_config.out_dir, run_dir))
+        stats = CommandHelper.run_command_output(['awk', '/sim_sec/ {print $2}', 'stats.txt'], {}, '%s/%s' % (main_config.out_dir, run_dir)).splitlines()
+        CommandHelper.run_command(['rm', '-rf', run_dir], {}, main_config.show_command_output, main_config.show_command_error, main_config.out_dir)
         totals.append(stats[-1])
 
     newData = comm.gather(totals, root=0)
 
     if rank == 0:
         flat_list = [item for sublist in newData for item in sublist]
-        print(f'master: {flat_list}')
+        print('master: %s' % flat_list)
 
         vals_dict = {}
         for val in totals:
