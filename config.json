@@ -9,5 +9,6 @@
   "out_dir": "/home/oipo/Documents/Programming/thesis/out",
   "stats_dir": "/home/oipo/Documents/Programming/thesis/stats",
   "executable": "/home/oipo/Documents/Programming/thesis/EdifymRunner",
-  "cpu_freq": "10MHz"
+  "cpu_freq": "10MHz",
+  "zstd": "zstd"
 }

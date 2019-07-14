@@ -10,6 +10,7 @@ class MainConfig:
     stats_dir: str = ""
     executable: str = ""
     cpu_freq: str = ""
+    zstd: str = ""
 
     def __init__(self, json_data):
         self.gem5_executable_path = json_data['gem5_executable_path']
@@ -23,3 +24,4 @@ class MainConfig:
         self.stats_dir = json_data['stats_dir']
         self.executable = json_data['executable']
         self.cpu_freq = json_data['cpu_freq']
+        self.zstd = json_data['zstd']

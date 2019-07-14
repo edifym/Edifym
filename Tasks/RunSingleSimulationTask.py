@@ -34,7 +34,7 @@ class RunSingleSimulationTask(ITask):
             CommandHelper.run_command(['mkdir', '-p', f'{self.main_config.out_dir}/run_{self.run_id}'], {}, self.main_config.show_command_output, self.main_config.show_command_error)
             CommandHelper.run_command(gem5_args, {}, self.main_config.show_command_output, self.main_config.show_command_error, f'{self.main_config.out_dir}/run_{self.run_id}')
             CommandHelper.run_command(['mkdir', '-p', f'{self.main_config.stats_dir}/run_{self.run_id}'], {}, self.main_config.show_command_output, self.main_config.show_command_error)
-            CommandHelper.run_command(['zstd', '-1', '--rm', '-f', f'stats.txt'], {}, self.main_config.show_command_output, self.main_config.show_command_error, f'{self.main_config.out_dir}/run_{self.run_id}/m5out')
+            CommandHelper.run_command([self.main_config.zstd, '-1', '--rm', '-f', f'stats.txt'], {}, self.main_config.show_command_output, self.main_config.show_command_error, f'{self.main_config.out_dir}/run_{self.run_id}/m5out')
             CommandHelper.run_command(['mv', f'm5out/stats.txt.zst', f'{self.main_config.stats_dir}/run_{self.run_id}'], {}, self.main_config.show_command_output, self.main_config.show_command_error, f'{self.main_config.out_dir}/run_{self.run_id}')
             CommandHelper.run_command(['rm', f'-rf', f'{self.main_config.out_dir}/run_{self.run_id}'], {}, self.main_config.show_command_output, self.main_config.show_command_error)
 

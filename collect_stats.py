@@ -1,12 +1,3 @@
-# execute gem5
-# read input from config.json
-# read input from benchmarks.json?
-# Store output per run:
-# - core/task configuration
-# - input vars
-# - ticks & time in seconds?
-# -
-
 import json
 import os
 import signal
@@ -36,13 +27,13 @@ def queue_worker(dir_queue: Queue, totals_queue: Queue, worker_id: int):
             run_dir = dir_queue.get(True, 0.5)
             #print(run_dir)
             CommandHelper.run_command(['mkdir', f'{run_dir}'], {}, main_config.show_command_output, main_config.show_command_error, f'{main_config.out_dir}')
-            CommandHelper.run_command(['zstd', '-d', '-f', f'{main_config.stats_dir}/{run_dir}/stats.txt.zst', '-o', 'stats.txt'], {}, main_config.show_command_output, main_config.show_command_error, f'{main_config.out_dir}/{run_dir}')
+            CommandHelper.run_command([main_config.zstd, '-d', '-f', f'{main_config.stats_dir}/{run_dir}/stats.txt.zst', '-o', 'stats.txt'], {}, main_config.show_command_output, main_config.show_command_error, f'{main_config.out_dir}/{run_dir}')
             stats = CommandHelper.run_command_output(['awk', '/sim_sec/ {print $2}', f'stats.txt'], {}, f'{main_config.out_dir}/{run_dir}').splitlines()
             CommandHelper.run_command(['rm', '-rf', f'{run_dir}'], {}, main_config.show_command_output, main_config.show_command_error, f'{main_config.out_dir}')
 
             totals_queue.put(stats[-1])
         except Empty:
-            print(f'No more tasks for worker {id}')
+            print(f'No more tasks for worker {worker_id}')
             break
         except:
             print(f'Unexpected exception {sys.exc_info()[0]}')

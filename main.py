@@ -1,12 +1,3 @@
-# execute gem5
-# read input from config.json
-# read input from benchmarks.json?
-# Store output per run:
-# - core/task configuration
-# - input vars
-# - ticks & time in seconds?
-# -
-
 import json
 import sys
 from queue import Empty
@@ -37,7 +28,7 @@ def queue_worker(queue: Queue, worker_id: int):
             task = queue.get(True, 0.5)
             task.execute()
         except Empty:
-            print(f'No more tasks for worker {id}')
+            print(f'No more tasks for worker {worker_id}')
             break
         except:
             print(f'Unexpected exception {sys.exc_info()[0]}')
