@@ -1,13 +1,11 @@
 import itertools
-from multiprocessing import Queue, Value
+import datetime
 
 import MainConfig
 from Tasks.ITask import ITask
-from typing import List, Iterator, Tuple
+from typing import List, Iterator
 
 from BenchmarkConfig import Benchmark, Task
-
-from Tasks.RunSingleSimulationTask import RunSingleSimulationTask
 
 
 def anydup(thelist):
@@ -21,19 +19,23 @@ def anydup(thelist):
 class GenerateThreadsSimulationsTask(ITask):
     main_config: MainConfig
     benchmark: Benchmark
+    skip: int
+    rank: int
 
-    def __init__(self, main_config: MainConfig, benchmark: Benchmark):
+    def __init__(self, main_config: MainConfig, benchmark: Benchmark, rank: int, skip: int):
         self.main_config = main_config
         self.benchmark = benchmark
+        self.skip = skip
+        self.rank = rank
 
     def produce_task_permutations(self) -> Iterator[List[Task]]:
-        print('produce_task_permutations')
+        print(f'node {self.rank} produce_task_permutations')
         for L in range(0, len(self.benchmark.tasks) + 1):
             count = 0
             print(f'L: {L}')
             for sub_benchmark in itertools.permutations(self.benchmark.tasks, L):
-                if count > 1_000:
-                    print(f'breaking at {count}')
+                if count > 10_000_000:
+                    print(f'node {self.rank} breaking at {count}')
                     break
 
                 count += 1
@@ -41,11 +43,12 @@ class GenerateThreadsSimulationsTask(ITask):
                 yield sub_benchmark
 
     def produce_tasks_per_core_permutations(self, tasks: Iterator[List[Task]]) -> Iterator[List[List[Task]]]:
-        for workloads in itertools.permutations(tasks, self.main_config.num_cpus):
+        for workloads in itertools.islice(itertools.permutations(tasks, self.main_config.num_cpus), self.rank * self.skip, (self.rank + 1) * self.skip):
             yield workloads
 
     def execute(self):
-        print(f'Starting GenerateThreadsSimulationsTask {len(self.benchmark.tasks)}')
+        start = datetime.datetime.now()
+        print(f'node {self.rank} starting GenerateThreadsSimulationsTask {len(self.benchmark.tasks)} {start}')
 
         run_id = 1
         count_checked = 0
@@ -56,7 +59,7 @@ class GenerateThreadsSimulationsTask(ITask):
             count_checked += 1
 
             if count_checked % 1_000_000 == 0:
-                print(f'Checked {count_checked} tasks, added {run_id - 1} tasks')
+                print(f'node {self.rank} checked {count_checked} tasks, added {run_id - 1} tasks')
 
             if sum(map(len, task_permutation)) != len(self.benchmark.tasks):
                 continue
@@ -91,5 +94,6 @@ class GenerateThreadsSimulationsTask(ITask):
             runs_to_distribute.append((run_args, run_id))
             run_id += 1
 
-        print('GenerateThreadsSimulationsTask done')
+        end = datetime.datetime.now()
+        print(f'node {self.rank} GenerateThreadsSimulationsTask done {end - start}')
         return runs_to_distribute

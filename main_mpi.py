@@ -34,9 +34,10 @@ if __name__ == "__main__":
 
     benchmark, = [bench for bench in benchmark_config.benchmarks if bench.name == main_config.benchmark]
 
-    if rank == 0:
-        print(datetime.datetime.now())
-        data = GenerateThreadsSimulationsTask(main_config, benchmark).execute()
+    start = datetime.datetime.now()
+    '''if rank == 0:
+        print(start)
+        data = GenerateThreadsSimulationsTask(main_config, benchmark, rank * 1_000_000).execute()
         print(f'master data size {len(data)}')
         # dividing data into chunks
         chunks = [[] for _ in range(size)]
@@ -46,10 +47,13 @@ if __name__ == "__main__":
         data = None
         chunks = None
 
-    data = comm.scatter(chunks, root=0)
+    data = comm.scatter(chunks, root=0)'''
+
+    data = GenerateThreadsSimulationsTask(main_config, benchmark, rank, 1_000_000_000).execute()
 
     for run in data:
-        print(f'node {rank} run {run}')
-        RunSingleSimulationTask(main_config, run[0], run[1]).execute()
+        print(f'node {rank} run {run[1]}')
+        RunSingleSimulationTask(main_config, run[0], rank, run[1]).execute()
 
-    print(f'node {rank} done {datetime.datetime.now()}')
+    end = datetime.datetime.now()
+    print(f'node {rank} done {end - start}')
