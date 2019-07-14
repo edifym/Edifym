@@ -1,5 +1,6 @@
 import json
 import os
+import sys
 from mpi4py import MPI
 
 from MainConfig import MainConfig
@@ -28,6 +29,19 @@ if __name__ == "__main__":
     totals = []
     runs = 0
 
+    one = os.path.isdir('/local')
+    two = os.path.isdir('/local/mdelang')
+    print(f'node {rank} /local exists {one} {two}')
+
+    if not two:
+        try:
+            os.mkdirs('/local/mdelang/out')
+        except Exception as inst:
+            print(type(inst))
+            print(inst.args)
+            print(inst)
+            print(sys.exc_info()[0])
+
     if rank == 0:
         data = get_immediate_subdirectories(main_config.stats_dir)
         print(f'master data size {len(data)}')
@@ -43,12 +57,19 @@ if __name__ == "__main__":
 
     totals = []
     for run_dir in data:
-        CommandHelper.run_command(['mkdir', '-p', f'{main_config.out_dir}/{run_dir}'], {}, main_config.show_command_output, main_config.show_command_error)
-        CommandHelper.run_command([main_config.zstd, '-d', '-f', f'{main_config.stats_dir}/{run_dir}/stats.txt.zst', '-o', 'stats.txt'], {}, main_config.show_command_output, main_config.show_command_error, f'{main_config.out_dir}/{run_dir}')
-        stats = CommandHelper.run_command_output(['awk', '/sim_sec/ {print $2}', f'stats.txt'], {}, f'{main_config.out_dir}/{run_dir}').splitlines()
-        CommandHelper.run_command(['rm', '-rf', f'{run_dir}'], {}, main_config.show_command_output, main_config.show_command_error, f'{main_config.out_dir}')
-        totals.append(stats[-1])
+        try:
+            CommandHelper.run_command(['mkdir', '-p', f'{main_config.out_dir}/{run_dir}'], {}, main_config.show_command_output, main_config.show_command_error)
+            CommandHelper.run_command([main_config.zstd, '-d', '-f', f'{main_config.stats_dir}/{run_dir}/stats.txt.zst', '-o', 'stats.txt'], {}, main_config.show_command_output, main_config.show_command_error, f'{main_config.out_dir}/{run_dir}')
+            stats = CommandHelper.run_command_output(['awk', '/sim_sec/ {print $2}', f'stats.txt'], {}, f'{main_config.out_dir}/{run_dir}').splitlines()
+            CommandHelper.run_command(['rm', '-rf', f'{run_dir}'], {}, main_config.show_command_output, main_config.show_command_error, f'{main_config.out_dir}')
+            totals.append(stats[-1])
+        except Exception as inst:
+            print(type(inst))
+            print(inst.args)
+            print(inst)
+            print(sys.exc_info()[0])
 
+    print(f'node {rank} gather')
     newData = comm.gather(totals, root=0)
 
     if rank == 0:
@@ -64,6 +85,9 @@ if __name__ == "__main__":
         print(max(totals))
         print(min(totals))
         print(vals_dict)
+    else:
+        print(f'node {rank} done')
+
     '''import matplotlib.pylab as plt
 
     lists = [(x[5:], y) for x, y in sorted(vals_dict.items())] # sorted by key, return a list of tuples
