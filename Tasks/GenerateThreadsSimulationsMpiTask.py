@@ -32,7 +32,7 @@ class GenerateThreadsSimulationsTask(ITask):
         print(f'node {self.rank} produce_task_permutations')
         for L in range(0, len(self.benchmark.tasks) + 1):
             count = 0
-            print(f'L: {L}')
+            print(f'node {self.rank} L: {L}')
             for sub_benchmark in itertools.permutations(self.benchmark.tasks, L):
                 if count > 10_000_000:
                     print(f'node {self.rank} breaking at {count}')
