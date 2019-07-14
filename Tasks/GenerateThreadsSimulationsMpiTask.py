@@ -34,7 +34,7 @@ class GenerateThreadsSimulationsTask(ITask):
             count = 0
             print(f'node {self.rank} L: {L}')
             for sub_benchmark in itertools.permutations(self.benchmark.tasks, L):
-                if count > 10_000_000:
+                if count > 1_00_000:
                     print(f'node {self.rank} breaking at {count}')
                     break
 
@@ -97,3 +97,4 @@ class GenerateThreadsSimulationsTask(ITask):
         end = datetime.datetime.now()
         print(f'node {self.rank} GenerateThreadsSimulationsTask done {end - start}')
         return runs_to_distribute
+t
