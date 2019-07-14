@@ -1,6 +1,7 @@
 import json
 import sys
 import os
+import datetime
 from mpi4py import MPI
 
 from MainConfig import MainConfig
@@ -34,6 +35,7 @@ if __name__ == "__main__":
     benchmark, = [bench for bench in benchmark_config.benchmarks if bench.name == main_config.benchmark]
 
     if rank == 0:
+        print(datetime.datetime.now())
         data = GenerateThreadsSimulationsTask(main_config, benchmark).execute()
         print(f'master data size {len(data)}')
         # dividing data into chunks
@@ -50,4 +52,4 @@ if __name__ == "__main__":
         print(f'node {rank} run {run}')
         RunSingleSimulationTask(main_config, run[0], run[1]).execute()
 
-    print(f'node {rank} done')
+    print(f'node {rank} done {datetime.datetime.now()}')
