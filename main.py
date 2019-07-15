@@ -1,40 +1,14 @@
 import json
 import sys
-from queue import Empty
-import signal
+import os
+import datetime
+import math
+from mpi4py import MPI
 
 from MainConfig import MainConfig
 from BenchmarkConfig import BenchmarkConfig
-from Tasks.GenerateThreadsSimulationsTask import GenerateThreadsSimulationsTask
-from multiprocessing import Process, Queue, Value
-from time import sleep
-
-shm_quit = Value('b', False)
-
-
-def signal_handler(sig, frame):
-    print('Quitting all remaining workers')
-    global shm_quit
-    shm_quit.value = True
-
-
-def queue_worker(queue: Queue, worker_id: int):
-    global shm_quit
-    sleep(5)
-    print(f'starting worker {worker_id}')
-
-    while not shm_quit.value:
-        try:
-            task = queue.get(True, 0.5)
-            task.execute()
-        except Empty:
-            print(f'No more tasks for worker {worker_id}')
-            break
-        except:
-            print(f'Unexpected exception {sys.exc_info()[0]}')
-            break
-
-    print(f'stopping worker {worker_id} {shm_quit.value}')
+#from Tasks.GenerateThreadsSimulationsMpiTask import GenerateThreadsSimulationsTask
+from Tasks.GenerateValueSimulationsTask import GenerateThreadsSimulationsTask
 
 
 if __name__ == "__main__":
@@ -42,20 +16,34 @@ if __name__ == "__main__":
     benchmark_data = json.load(open('benchmarks.json'))
     main_config = MainConfig(main_data)
     benchmark_config = BenchmarkConfig(benchmark_data)
-    q = Queue()
-    q.cancel_join_thread()
 
-    signal.signal(signal.SIGINT, signal_handler)
+    comm = MPI.COMM_WORLD
+    size = comm.Get_size()
+    rank = comm.Get_rank()
+
+    one = os.path.isdir(main_config.out_dir)
+    print(f'node {rank} {main_config.out_dir} exists {one}')
+
+    if not one:
+        try:
+            os.makedirs(main_config.out_dir, exist_ok=True)
+        except Exception as inst:
+            print(type(inst))
+            print(inst.args)
+            print(inst)
+            print(sys.exc_info()[0])
 
     benchmark, = [bench for bench in benchmark_config.benchmarks if bench.name == main_config.benchmark]
 
-    for i in range(0, main_config.num_workers - 1):
-        p = Process(target=queue_worker, args=(q, i))
-        p.start()
+    start = datetime.datetime.now()
 
-    GenerateThreadsSimulationsTask(main_config, benchmark, q, shm_quit).execute()
+    total_permutations = math.factorial(len(benchmark.tasks))
+    total_size = total_permutations*(len(benchmark.tasks) + 1)
 
-    if shm_quit.value:
-        sys.exit(1)
+    skip = int(total_permutations/size)
+    print(f'total_size {total_size} total_permutations {total_permutations} skip {int(total_permutations/size)} actual {skip}')
 
-    queue_worker(q, main_config.num_workers)
+    GenerateThreadsSimulationsTask(main_config, benchmark, rank, skip).execute()
+
+    end = datetime.datetime.now()
+    print(f'node {rank} done {end - start}')

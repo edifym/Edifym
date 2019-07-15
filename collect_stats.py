@@ -1,45 +1,11 @@
 import json
 import os
-import signal
 import sys
-from queue import Empty
+from mpi4py import MPI
 
 from MainConfig import MainConfig
 from typing import List
 from CommandHelper import CommandHelper
-from multiprocessing import Process, Queue, Value
-
-shm_quit = Value('b', False)
-
-
-def signal_handler(sig, frame):
-    print('Quitting')
-    global shm_quit
-    shm_quit.value = True
-
-
-def queue_worker(dir_queue: Queue, totals_queue: Queue, worker_id: int):
-    global shm_quit
-    print(f'starting worker {worker_id}')
-
-    while not shm_quit.value:
-        try:
-            run_dir = dir_queue.get(True, 0.5)
-            #print(run_dir)
-            CommandHelper.run_command(['mkdir', f'{run_dir}'], {}, main_config.show_command_output, main_config.show_command_error, f'{main_config.out_dir}')
-            CommandHelper.run_command([main_config.zstd, '-d', '-f', f'{main_config.stats_dir}/{run_dir}/stats.txt.zst', '-o', 'stats.txt'], {}, main_config.show_command_output, main_config.show_command_error, f'{main_config.out_dir}/{run_dir}')
-            stats = CommandHelper.run_command_output(['awk', '/sim_sec/ {print $2}', f'stats.txt'], {}, f'{main_config.out_dir}/{run_dir}').splitlines()
-            CommandHelper.run_command(['rm', '-rf', f'{run_dir}'], {}, main_config.show_command_output, main_config.show_command_error, f'{main_config.out_dir}')
-
-            totals_queue.put(stats[-1])
-        except Empty:
-            print(f'No more tasks for worker {worker_id}')
-            break
-        except:
-            print(f'Unexpected exception {sys.exc_info()[0]}')
-            break
-
-    print(f'stopping worker {worker_id} {shm_quit.value}')
 
 
 def get_immediate_subdirectories(a_dir: str) -> List[str]:
@@ -50,53 +16,75 @@ def get_immediate_subdirectories(a_dir: str) -> List[str]:
         if os.path.isdir(os.path.join(a_dir, name)):
             subdirs.append(name)
 
-    subdirs.sort()
     return subdirs
 
 
 if __name__ == "__main__":
     main_data = json.load(open('config.json'))
     main_config = MainConfig(main_data)
-    dir_q = Queue()
-    dir_q.cancel_join_thread()
 
-    totals_q = Queue()
-    totals_q.cancel_join_thread()
-
-    signal.signal(signal.SIGINT, signal_handler)
-    print(main_config.stats_dir)
-
+    comm = MPI.COMM_WORLD
+    size = comm.Get_size()
+    rank = comm.Get_rank()
     totals = []
     runs = 0
-    for run_dir in get_immediate_subdirectories(main_config.stats_dir):
-        dir_q.put(run_dir)
-        runs += 1
 
-    for i in range(0, main_config.num_workers):
-        p = Process(target=queue_worker, args=(dir_q, totals_q, i))
-        p.start()
+    one = os.path.isdir(main_config.out_dir)
+    print(f'node {rank} {main_config.out_dir} exists {one}')
 
-    while len(totals) < runs:
+    if not one:
         try:
-            totals.append(totals_q.get(True, 0.5))
-            if len(totals) % 1000 == 0:
-                print(len(totals))
-        except Empty:
-            print('No more tasks for main')
-            break
-        except:
-            print(f'Unexpected exception {sys.exc_info()[0]}')
-            break
+            os.makedirs(main_config.out_dir, exist_ok=True)
+        except Exception as inst:
+            print(type(inst))
+            print(inst.args)
+            print(inst)
+            print(sys.exc_info()[0])
 
-    vals_dict = {}
-    for val in totals:
-        if val in vals_dict:
-            vals_dict[val] += 1
-        else:
-            vals_dict[val] = 1
-    print(max(totals))
-    print(min(totals))
-    print(vals_dict)
+    if rank == 0:
+        data = get_immediate_subdirectories(main_config.stats_dir)
+        print(f'master data size {len(data)}')
+        # dividing data into chunks
+        chunks = [[] for _ in range(size)]
+        for i, chunk in enumerate(data):
+            chunks[i % size].append(chunk)
+    else:
+        data = None
+        chunks = None
+
+    data = comm.scatter(chunks, root=0)
+
+    totals = []
+    for run_dir in data:
+        try:
+            CommandHelper.run_command(['mkdir', '-p', f'{main_config.out_dir}/{run_dir}'], {}, main_config.show_command_output, main_config.show_command_error)
+            CommandHelper.run_command([main_config.zstd, '-d', '-f', f'{main_config.stats_dir}/{run_dir}/stats.txt.zst', '-o', 'stats.txt'], {}, main_config.show_command_output, main_config.show_command_error, f'{main_config.out_dir}/{run_dir}')
+            stats = CommandHelper.run_command_output(['awk', '/sim_sec/ {print $2}', f'stats.txt'], {}, f'{main_config.out_dir}/{run_dir}').splitlines()
+            CommandHelper.run_command(['rm', '-rf', f'{run_dir}'], {}, main_config.show_command_output, main_config.show_command_error, f'{main_config.out_dir}')
+            totals.append(stats[-1])
+        except Exception as inst:
+            print(type(inst))
+            print(inst.args)
+            print(inst)
+            print(sys.exc_info()[0])
+
+    print(f'node {rank} gather')
+    newData = comm.gather(totals, root=0)
+
+    if rank == 0:
+        flat_list = [item for sublist in newData for item in sublist]
+
+        vals_dict = {}
+        for val in flat_list:
+            if val in vals_dict:
+                vals_dict[val] += 1
+            else:
+                vals_dict[val] = 1
+        print(max(flat_list))
+        print(min(flat_list))
+        print(vals_dict)
+    else:
+        print(f'node {rank} done')
 
     '''import matplotlib.pylab as plt
 
