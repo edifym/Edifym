@@ -2,13 +2,11 @@ import json
 import sys
 import os
 import datetime
-import math
 from mpi4py import MPI
 
 from MainConfig import MainConfig
 from BenchmarkConfig import BenchmarkConfig
-#from Tasks.GenerateThreadsSimulationsTask import GenerateThreadsSimulationsTask
-from Tasks.GenerateThreadsAndValueSimulationsTask import GenerateThreadsAndValuesSimulationsTask
+from Tasks.GenerateWcetPerTaskSimulationsTask import GenerateWcetPerTaskSimulationsTask
 
 
 if __name__ == "__main__":
@@ -37,19 +35,34 @@ if __name__ == "__main__":
 
     start = datetime.datetime.now()
 
-    total_permutations = math.factorial(len(benchmark.tasks))
-    total_values = 1
+    if rank == 0:
+        data = benchmark.tasks
+        print(f'master data size {len(data)}')
+        # dividing data into chunks
+        chunks = [[] for _ in range(size)]
+        for i, chunk in enumerate(data):
+            chunks[i % size].append(chunk)
+    else:
+        data = None
+        chunks = None
 
-    for task in benchmark.tasks:
+    data = comm.scatter(chunks, root=0)
+
+    print(f'Node {rank} {len(data)} {data}')
+
+    total_values = 0
+
+    for task in data:
+        task_values = 1
         for value in task.values:
-            total_values *= len(value.values)
+            task_values *= len(value.values)
+        total_values += task_values
 
-    total_size = total_permutations*(len(benchmark.tasks) + 1)*total_values
+    total_size = total_values
 
-    skip = int(total_permutations/size)
-    print(f'total_size {total_size:,} total_permutations {total_permutations:,} total_values {total_values:,} skip {skip:,}')
+    print(f'Node {rank} total_size {total_size:,} total_values {total_values:,}')
 
-    GenerateThreadsAndValuesSimulationsTask(main_config, benchmark, rank, skip).execute()
+    GenerateWcetPerTaskSimulationsTask(main_config, data, rank).execute()
 
     end = datetime.datetime.now()
     print(f'node {rank} done {end - start}')

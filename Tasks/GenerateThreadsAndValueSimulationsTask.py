@@ -5,11 +5,11 @@ import MainConfig
 from Tasks.ITask import ITask
 from typing import List, Iterator
 
-from BenchmarkConfig import Benchmark, Task, Value
+from BenchmarkConfig import Benchmark, Task
 from Tasks.RunSingleSimulationTask import RunSingleSimulationTask
 
 
-class GenerateThreadsSimulationsTask(ITask):
+class GenerateThreadsAndValuesSimulationsTask(ITask):
     main_config: MainConfig
     benchmark: Benchmark
     skip: int
@@ -21,7 +21,7 @@ class GenerateThreadsSimulationsTask(ITask):
         self.skip = skip
         self.rank = rank
 
-    def produce_tasks_per_core_permutations(self, tasks: List[Task]) -> Iterator[List[Task]]:
+    def produce_task_permutations(self, tasks: List[Task]) -> Iterator[List[Task]]:
         for workloads in itertools.islice(itertools.permutations(tasks, len(tasks)), self.rank * self.skip, (self.rank + 1) * self.skip):
             yield workloads
 
@@ -74,12 +74,12 @@ class GenerateThreadsSimulationsTask(ITask):
         print(f'node {self.rank} starting GenerateThreadsSimulationsTask {len(self.benchmark.tasks)} {start}')
 
         run_id = 1
-        for task_permutation in self.produce_tasks_per_core_permutations(self.benchmark.tasks):
+        for task_permutation in self.produce_task_permutations(self.benchmark.tasks):
             for x in range(len(self.benchmark.tasks) + 1):
                 core_one = task_permutation[:x]
                 core_two = task_permutation[x:]
                 for run_args in self.get_workloads(core_one, core_two):
-                    RunSingleSimulationTask(self.main_config, run_args, self.rank, run_id).execute()
+                    RunSingleSimulationTask(self.main_config, run_args, self.rank, run_id, self.main_config.num_cpus).execute()
                     run_id += 1
 
         end = datetime.datetime.now()

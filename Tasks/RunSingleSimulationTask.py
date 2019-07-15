@@ -13,9 +13,9 @@ class RunSingleSimulationTask(ITask):
     run_id: int
     rank: int
 
-    def __init__(self, main_config: MainConfig, workloads: List[str], rank: int, run_id: int):
+    def __init__(self, main_config: MainConfig, workloads: List[str], rank: int, run_id: int, num_cpus: int):
         self.main_config = main_config
-        self.num_cpus = main_config.num_cpus
+        self.num_cpus = num_cpus
         self.workloads = workloads
         self.run_id = run_id
         self.rank = rank
@@ -51,4 +51,4 @@ class RunSingleSimulationTask(ITask):
         except:
             print(f'Error> {sys.exc_info()[0]}')
 
-        print(f'Node {self.rank} RunSingleSimulationTask done {self.run_id}')
+        print(f'Node {self.rank} RunSingleSimulationTask done {self.run_id:,}')
