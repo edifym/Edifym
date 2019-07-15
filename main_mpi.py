@@ -2,6 +2,7 @@ import json
 import sys
 import os
 import datetime
+import math
 from mpi4py import MPI
 
 from MainConfig import MainConfig
@@ -49,11 +50,12 @@ if __name__ == "__main__":
 
     data = comm.scatter(chunks, root=0)'''
 
-    data = GenerateThreadsSimulationsTask(main_config, benchmark, rank, 1_000_000_000).execute()
+    total_permutations = math.factorial(len(benchmark.tasks))
+    total_size = total_permutations*(len(benchmark.tasks) + 1)
 
-    for run in data:
-        print(f'node {rank} run {run[1]}')
-        RunSingleSimulationTask(main_config, run[0], rank, run[1]).execute()
+    skip = int(total_permutations/size)
+    print(f'total_size {total_size} total_permutations {total_permutations} skip {int(total_permutations/size)} actual {skip}')
+    GenerateThreadsSimulationsTask(main_config, benchmark, rank, skip).execute()
 
     end = datetime.datetime.now()
     print(f'node {rank} done {end - start}')

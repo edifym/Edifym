@@ -51,4 +51,4 @@ class RunSingleSimulationTask(ITask):
         except:
             print(f'Error> {sys.exc_info()[0]}')
 
-        print(f'RunSingleSimulationTask done {self.run_id}')
+        print(f'Node {self.rank} RunSingleSimulationTask done {self.run_id}')
