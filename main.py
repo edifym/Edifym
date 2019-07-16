@@ -7,8 +7,8 @@ from mpi4py import MPI
 
 from MainConfig import MainConfig
 from BenchmarkConfig import BenchmarkConfig
-#from Tasks.GenerateThreadsSimulationsTask import GenerateThreadsSimulationsTask
-from Tasks.GenerateThreadsAndValueSimulationsTask import GenerateThreadsAndValuesSimulationsTask
+from Tasks.GenerateThreadsSimulationsTask import GenerateThreadsSimulationsTask
+#from Tasks.GenerateThreadsAndValueSimulationsTask import GenerateThreadsAndValuesSimulationsTask
 
 
 if __name__ == "__main__":
@@ -49,7 +49,7 @@ if __name__ == "__main__":
     skip = int(total_permutations/size)
     print(f'total_size {total_size:,} total_permutations {total_permutations:,} total_values {total_values:,} skip {skip:,}')
 
-    GenerateThreadsAndValuesSimulationsTask(main_config, benchmark, rank, skip).execute()
+    GenerateThreadsSimulationsTask(main_config, benchmark, rank, skip).execute()
 
     end = datetime.datetime.now()
     print(f'node {rank} done {end - start}')
