@@ -1,6 +1,5 @@
 {
   "papabench1": {
-    "comment": "recheck values and paper for everything plz",
     "tasks": [{
       "name": "test_ppm_task",
       "values": [{
@@ -139,6 +138,148 @@
       "values": [{
         "name": "enabled",
         "values": [0, 1]
+      }]
+    }]
+  },
+  "papabench2": {
+    "tasks": [{
+      "name": "test_ppm_task",
+      "values": [{
+        "name": "mode",
+        "values": [1]
+      },{
+        "name": "ppm_valid",
+        "values": [0]
+      },{
+        "name": "spi_was_interrupted",
+        "values": [1]
+      },{
+        "name": "last_radio_contains_avg_channels",
+        "values": [1]
+      }]
+    },{
+      "name": "servo_transmit"
+    },{
+      "name": "send_data_to_autopilot_task",
+      "values": [{
+        "name": "mode",
+        "values": [0]
+      },{
+        "name": "SPI_PIN",
+        "values": [1]
+      },{
+        "name": "spi_was_interrupted",
+        "values": [1]
+      },{
+        "name": "last_radio_contains_avg_channels",
+        "values": [1]
+      }]
+    },{
+      "name": "check_mega128_values_task",
+      "values": [{
+        "name": "mode",
+        "values": [0]
+      },{
+        "name": "SPI_PIN",
+        "values": [1]
+      },{
+        "name": "spi_was_interrupted",
+        "values": [0]
+      },{
+        "name": "last_radio_contains_avg_channels",
+        "values": [1]
+      }]
+    },{
+      "name": "check_failsafe_task",
+      "values": [{
+        "name": "enabled",
+        "values": [0]
+      }]
+    },{
+      "name": "stabilisation_task",
+      "values": [{
+        "name": "ir_estim_mode",
+        "values": [1]
+      }]
+    },{
+      "name": "reporting_task"
+    },{
+      "name": "receive_gps_data_task",
+      "values": [{
+        "name": "ubx_class",
+        "values": [0]
+      },{
+        "name": "ubx_id",
+        "values": [3]
+      },{
+        "name": "gps_mode",
+        "values": [0]
+      },{
+        "name": "gps_pos_available",
+        "values": [0]
+      },{
+        "name": "estimator_flight_time",
+        "values": [0]
+      },{
+        "name": "estimator_hspeed_mod",
+        "values": [6]
+      }]
+    },{
+      "name": "radio_control_task",
+      "values": [{
+        "name": "link_fbw_receive_valid",
+        "values": [1]
+      },{
+        "name": "ubx_id",
+        "values": [4]
+      },{
+        "name": "from_fbw.status",
+        "values": [1]
+      },{
+        "name": "too_far_from_home",
+        "values": [1]
+      },{
+        "name": "estimator_flight_time",
+        "values": [0]
+      }]
+    },{
+      "name": "navigation_task",
+      "values": [{
+        "name": "pprz_mode",
+        "values": [0]
+      },{
+        "name": "vertical_mode",
+        "values": [3]
+      }]
+    },{
+      "name": "link_fbw_send",
+      "values": [{
+        "name": "spi_cur_slave",
+        "values": [1]
+      }]
+    },{
+      "name": "climb_control_task",
+      "values": [{
+        "name": "pprz_mode",
+        "values": [0]
+      },{
+        "name": "vertical_mode",
+        "values": [1]
+      },{
+        "name": "low_battery",
+        "values": [7]
+      },{
+        "name": "estimator_flight_time",
+        "values": [6]
+      },{
+        "name": "launch",
+        "values": [1]
+      }]
+    },{
+      "name": "altitude_control_task",
+      "values": [{
+        "name": "enabled",
+        "values": [1]
       }]
     }]
   }
