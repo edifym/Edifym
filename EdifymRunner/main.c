@@ -153,7 +153,7 @@ int main( int argc, char *argv[] ) {
             free(task_args);
         }
 
-        m5_reset_stats(0, 0);
+        m5_dump_stats(0, 0);
         t->function();
         m5_dump_stats(0, 0);
     }
