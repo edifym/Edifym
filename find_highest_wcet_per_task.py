@@ -62,7 +62,7 @@ if __name__ == "__main__":
         chunks = None
 
     data = comm.scatter(chunks, root=0)
-    print(f'data {data}')
+    print(f'Node {rank} data {len(data)}')
 
     totals = []
     for run_dir in data:
@@ -72,26 +72,28 @@ if __name__ == "__main__":
             stats = CommandHelper.run_command_output(['awk', '/sim_insts/ {print $2}', f'stats.txt'], {}, f'{main_config.out_dir}/{run_dir}').splitlines()
             CommandHelper.run_command(['rm', '-rf', f'{run_dir}'], {}, main_config.show_command_output, main_config.show_command_error, f'{main_config.out_dir}')
 
-            if len(stats) != 2:
-                print(f'Expected two stat results, got {len(stats)} {stats}')
+            if len(stats) != 3:
+                print(f'Expected three stat results, got {len(stats)} {stats}')
                 raise Exception
 
-            totals.append((run_dir, int(stats[0])))
+            totals.append((run_dir, int(stats[1])))
         except Exception as inst:
             print(type(inst))
             print(inst.args)
             print(inst)
             print(sys.exc_info()[0])
 
-    highest = 0
-    highest_run_dirs = []
-    for run_dir, insts in totals:
-        if insts >= highest:
-            highest = insts
-            highest_run_dirs.append(run_dir)
+    if len(data) > 0:
+        highest = 0
+        highest_run_dirs = []
+        for run_dir, insts in totals:
+            if insts >= highest:
+                highest = insts
+                highest_run_dirs.append(run_dir)
 
-    workload = CommandHelper.run_command_output(['cat', f'workloads.json'], {}, f'{main_config.stats_dir}/{highest_run_dirs[0]}').splitlines()
-    print(f'node {rank} highest workload {highest_run_dirs} {workload[1]}')
+        workload = CommandHelper.run_command_output(['cat', f'workloads.json'], {}, f'{main_config.stats_dir}/{highest_run_dirs[0]}').splitlines()
+        print(f'node {rank} highest workload {highest} {highest_run_dirs} {workload[1]}')
+
     print(f'node {rank} done')
 
     '''import matplotlib.pylab as plt
