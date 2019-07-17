@@ -17,14 +17,6 @@ if(NOT DEFINED ENV{M5_DIR})
     message(FATAL_ERROR "Please set the environment variable M5_DIR to where gem5/util/m5 is located.")
 endif()
 
-if(NOT DEFINED ENV{TASK_SIZE})
-    message(FATAL_ERROR "Please set the environment variable TASK_SIZE to how many tasks there should be executed.")
-endif()
-
-if(NOT DEFINED ENV{TASKS})
-    message(FATAL_ERROR "Please set the environment variable TASKS to the names of the tasks to be executed, as defined in LIBRARY_UNDER_TEST.")
-endif()
-
 if(NOT DEFINED ENV{LIBRARY_UNDER_TEST})
     message(FATAL_ERROR "Please set the environment variable LIBRARY_UNDER_TEST to the full name of the library to be included in linking.")
 endif()
@@ -47,8 +39,5 @@ endif()
 
 target_link_libraries(EdifymRunner PUBLIC ${MFIVE})
 target_link_libraries(EdifymRunner PUBLIC ${LUT})
-
-add_definitions(-DTASKS=$ENV{TASKS})
-add_definitions(-DTASK_SIZE=$ENV{TASK_SIZE})
 
 set_target_properties(EdifymRunner PROPERTIES LINK_FLAGS "-static" )
