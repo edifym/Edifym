@@ -61,7 +61,19 @@ if __name__ == "__main__":
             CommandHelper.run_command([main_config.zstd, '-d', '-f', f'{main_config.stats_dir}/{run_dir}/stats.txt.zst', '-o', 'stats.txt'], {}, main_config.show_command_output, main_config.show_command_error, f'{main_config.out_dir}/{run_dir}')
             stats = CommandHelper.run_command_output(['awk', '/sim_sec/ {print $2}', f'stats.txt'], {}, f'{main_config.out_dir}/{run_dir}').splitlines()
             CommandHelper.run_command(['rm', '-rf', f'{run_dir}'], {}, main_config.show_command_output, main_config.show_command_error, f'{main_config.out_dir}')
-            totals.append(stats[-1])
+            if len(stats) != 27:
+                print(f'node {rank} run_dir {run_dir} incorrect stats length {stats}')
+            else:
+                total_time_for_tasks = 0
+                prev_time = 0
+                for i in range(26):
+                    if i % 2 == 0:
+                        prev_time = stats[i]
+                    else:
+                        print(f'node {rank} adding {stats[i]} {stats[i-1]}')
+                        total_time_for_tasks += stats[i] - stats[i-1]
+                print(f'node {rank} adding total {total_time_for_tasks}')
+                totals.append(total_time_for_tasks)
         except Exception as inst:
             print(type(inst))
             print(inst.args)
