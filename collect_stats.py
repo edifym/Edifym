@@ -90,6 +90,7 @@ if __name__ == "__main__":
     newData = comm.gather(totals, root=0)
 
     if rank == 0:
+        import pickle
         flat_list = [item for sublist in newData for item in sublist]
         print(f'Node {rank} total results {len(flat_list)}')
 
@@ -102,6 +103,10 @@ if __name__ == "__main__":
         print(max(flat_list))
         print(min(flat_list))
         print(vals_dict)
+
+        f = open(f'{main_config.stats_dir}/dict.pkl', 'wb')
+        pickle.dump(vals_dict, f)
+        f.close()
     else:
         print(f'node {rank} done')
 
