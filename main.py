@@ -5,6 +5,7 @@ import datetime
 import math
 from mpi4py import MPI
 
+from CommandHelper import CommandHelper
 from MainConfig import MainConfig
 from BenchmarkConfig import BenchmarkConfig
 from Tasks.GenerateThreadsSimulationsTask import GenerateThreadsSimulationsTask
@@ -22,7 +23,9 @@ if __name__ == "__main__":
     rank = comm.Get_rank()
 
     one = os.path.isdir(main_config.out_dir)
-    print(f'node {rank} {main_config.out_dir} exists {one}')
+    #output = CommandHelper.run_command_output(['df', '-BM', '/local/mdelang'])
+    hostname = CommandHelper.run_command_output(['hostname'])
+    print(f'Node {rank} {hostname} {main_config.out_dir} exists {one}')
 
     if not one:
         try:
@@ -47,9 +50,9 @@ if __name__ == "__main__":
     total_size = total_permutations*(len(benchmark.tasks) + 1)*total_values
 
     skip = int(total_permutations/size)
-    print(f'total_size {total_size:,} total_permutations {total_permutations:,} total_values {total_values:,} skip {skip:,}')
+    print(f'Node {rank} {hostname} total_size {total_size:,} total_permutations {total_permutations:,} total_values {total_values:,} skip {skip:,}')
 
     GenerateThreadsSimulationsTask(main_config, benchmark, rank, skip).execute()
 
     end = datetime.datetime.now()
-    print(f'node {rank} done {end - start}')
+    print(f'node {rank} {hostname} done {end - start}')

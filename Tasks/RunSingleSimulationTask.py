@@ -33,11 +33,11 @@ class RunSingleSimulationTask(ITask):
                                     str(self.num_cpus)]
             gem5_args.extend(self.workloads)
 
-            CommandHelper.run_command(['mkdir', '-p', f'{self.main_config.out_dir}/run_{self.rank}_{self.run_id}'], {}, self.main_config.show_command_output, self.main_config.show_command_error)
-            CommandHelper.run_command(gem5_args, {}, self.main_config.show_command_output, self.main_config.show_command_error, f'{self.main_config.out_dir}/run_{self.rank}_{self.run_id}')
-            CommandHelper.run_command(['mkdir', '-p', f'{self.main_config.stats_dir}/run_{self.rank}_{self.run_id}'], {}, self.main_config.show_command_output, self.main_config.show_command_error)
-            CommandHelper.run_command([self.main_config.zstd, '-1', '--rm', '-f', f'stats.txt', '-o', f'{self.main_config.stats_dir}/run_{self.rank}_{self.run_id}/stats.txt.zst'], {}, self.main_config.show_command_output, self.main_config.show_command_error, f'{self.main_config.out_dir}/run_{self.rank}_{self.run_id}/m5out')
-            CommandHelper.run_command(['rm', f'-rf', f'{self.main_config.out_dir}/run_{self.rank}_{self.run_id}'], {}, self.main_config.show_command_output, self.main_config.show_command_error)
+            CommandHelper.run_command(['mkdir', '-p', f'{self.main_config.out_dir}/run_{self.rank}_{self.run_id}'], self.main_config.show_command_output, self.main_config.show_command_error)
+            CommandHelper.run_command(gem5_args, self.main_config.show_command_output, self.main_config.show_command_error, f'{self.main_config.out_dir}/run_{self.rank}_{self.run_id}')
+            CommandHelper.run_command(['mkdir', '-p', f'{self.main_config.stats_dir}/run_{self.rank}_{self.run_id}'], self.main_config.show_command_output, self.main_config.show_command_error)
+            CommandHelper.run_command([self.main_config.zstd, '-15', '--rm', '-f', '-D', f'{self.main_config.stats_dir}/zstd-dict', f'stats.txt', '-o', f'{self.main_config.stats_dir}/run_{self.rank}_{self.run_id}/stats.txt.zst'], self.main_config.show_command_output, self.main_config.show_command_error, f'{self.main_config.out_dir}/run_{self.rank}_{self.run_id}/m5out')
+            CommandHelper.run_command(['rm', f'-rf', f'{self.main_config.out_dir}/run_{self.rank}_{self.run_id}'], self.main_config.show_command_output, self.main_config.show_command_error)
 
             JsonHelper.object_as_json_to_file(f'{self.main_config.stats_dir}/run_{self.rank}_{self.run_id}/workloads.json', self.workloads)
         except OSError as e:
