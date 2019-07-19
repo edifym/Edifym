@@ -9,8 +9,8 @@ from slinkie import Slinkie
 class CommandHelper:
 
     @staticmethod
-    def run_command(command: List[str], new_env: Dict[str, str], show_output: bool = True, show_error: bool = True, cwd: str = './EdifymRunner'):
-            proc = subprocess.Popen(command, cwd=cwd, env=new_env, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    def run_command(command: List[str], show_output: bool = True, show_error: bool = True, cwd: str = './EdifymRunner'):
+            proc = subprocess.Popen(command, cwd=cwd, env={}, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             if show_output:
                 args = ' '.join(proc.args)
                 print(f'executing {args}')
@@ -23,18 +23,9 @@ class CommandHelper:
                 print(f'{command[0]} error> {proc.returncode} {error.strip()}')
 
     @staticmethod
-    def run_command_output(command: List[str], new_env: Dict[str, str], cwd: str = './EdifymRunner') -> str:
-            proc = subprocess.Popen(command, cwd=cwd, env=new_env, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    def run_command_output(command: List[str], cwd: str = './EdifymRunner') -> str:
+            proc = subprocess.Popen(command, cwd=cwd, env={}, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
             output, error = proc.communicate()
 
             return output
-
-    @staticmethod
-    def create_environment_from_config(config: MainConfig, benchmark: Benchmark) -> Dict[str, str]:
-        new_env = os.environ.copy()
-        new_env['M5_DIR'] = config.m5_path
-        new_env['LIBRARY_UNDER_TEST'] = config.library_name
-        new_env['TASK_SIZE'] = str(len(benchmark.tasks))
-        new_env['TASKS'] = '{' + Slinkie(benchmark.tasks).map(lambda it: f'"{it.name}"').join(', ') + '}'
-        return new_env

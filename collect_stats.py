@@ -1,6 +1,9 @@
 import json
 import os
 import sys
+import time
+
+from datetime import timedelta, datetime
 from mpi4py import MPI
 
 from MainConfig import MainConfig
@@ -8,12 +11,13 @@ from typing import List
 from CommandHelper import CommandHelper
 
 
-def get_immediate_subdirectories(a_dir: str) -> List[str]:
+def get_immediate_subdirectories(a_dir: str, max_timestamp: float) -> List[str]:
     dirs = os.listdir(a_dir)
     subdirs = []
 
     for name in dirs:
-        if os.path.isdir(os.path.join(a_dir, name)):
+        path = os.path.join(a_dir, name)
+        if os.path.isdir(path) and os.path.getctime(path) < max_timestamp:
             subdirs.append(name)
 
     return subdirs
@@ -42,7 +46,9 @@ if __name__ == "__main__":
             print(sys.exc_info()[0])
 
     if rank == 0:
-        data = get_immediate_subdirectories(main_config.stats_dir)
+        first_timestamp = os.path.getctime(f'{main_config.stats_dir}/run_0_1')
+        max_timestamp = time.mktime((datetime.fromtimestamp(first_timestamp) + timedelta(minutes=5)).timetuple())
+        data = get_immediate_subdirectories(main_config.stats_dir, max_timestamp)
         print(f'master data size {len(data)}')
         # dividing data into chunks
         chunks = [[] for _ in range(size)]
@@ -57,22 +63,22 @@ if __name__ == "__main__":
     totals = []
     for run_dir in data:
         try:
-            CommandHelper.run_command(['mkdir', '-p', f'{main_config.out_dir}/{run_dir}'], {}, main_config.show_command_output, main_config.show_command_error)
-            CommandHelper.run_command([main_config.zstd, '-d', '-f', f'{main_config.stats_dir}/{run_dir}/stats.txt.zst', '-o', 'stats.txt'], {}, main_config.show_command_output, main_config.show_command_error, f'{main_config.out_dir}/{run_dir}')
-            stats = CommandHelper.run_command_output(['awk', '/sim_sec/ {print $2}', f'stats.txt'], {}, f'{main_config.out_dir}/{run_dir}').splitlines()
-            CommandHelper.run_command(['rm', '-rf', f'{run_dir}'], {}, main_config.show_command_output, main_config.show_command_error, f'{main_config.out_dir}')
+            CommandHelper.run_command(['mkdir', '-p', f'{main_config.out_dir}/{run_dir}'], main_config.show_command_output, main_config.show_command_error)
+            CommandHelper.run_command([main_config.zstd, '-D', f'{main_config.stats_dir}/zstd-dict', '-d', '-f', f'{main_config.stats_dir}/{run_dir}/stats.txt.zst', '-o', 'stats.txt'], main_config.show_command_output, main_config.show_command_error, f'{main_config.out_dir}/{run_dir}')
+            stats = CommandHelper.run_command_output(['awk', '/sim_sec/ {print $2}', f'stats.txt'], f'{main_config.out_dir}/{run_dir}').splitlines()
+            CommandHelper.run_command(['rm', '-rf', f'{run_dir}'], main_config.show_command_output, main_config.show_command_error, f'{main_config.out_dir}')
             if len(stats) != 27:
-                print(f'node {rank} run_dir {run_dir} incorrect stats length {stats}')
+                print(f'node {rank} run_dir {run_dir} incorrect stats length {len(stats)} {stats}')
             else:
                 total_time_for_tasks = 0
                 prev_time = 0
                 for i in range(26):
                     if i % 2 == 0:
-                        prev_time = stats[i]
+                        prev_time = int(stats[i][2:])
                     else:
-                        print(f'node {rank} adding {stats[i]} {stats[i-1]}')
-                        total_time_for_tasks += stats[i] - stats[i-1]
-                print(f'node {rank} adding total {total_time_for_tasks}')
+                        #print(f'node {rank} adding {int(stats[i][2:]):,} {int(stats[i-1][2:]):,}')
+                        total_time_for_tasks += int(stats[i][2:]) - int(stats[i-1][2:])
+                #print(f'node {rank} adding total {total_time_for_tasks}')
                 totals.append(total_time_for_tasks)
         except Exception as inst:
             print(type(inst))
@@ -85,6 +91,7 @@ if __name__ == "__main__":
 
     if rank == 0:
         flat_list = [item for sublist in newData for item in sublist]
+        print(f'Node {rank} total results {len(flat_list)}')
 
         vals_dict = {}
         for val in flat_list:

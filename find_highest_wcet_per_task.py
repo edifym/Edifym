@@ -67,10 +67,10 @@ if __name__ == "__main__":
     totals = []
     for run_dir in data:
         try:
-            CommandHelper.run_command(['mkdir', '-p', f'{main_config.out_dir}/{run_dir}'], {}, main_config.show_command_output, main_config.show_command_error)
-            CommandHelper.run_command([main_config.zstd, '-d', '-f', f'{main_config.stats_dir}/{run_dir}/stats.txt.zst', '-o', 'stats.txt'], {}, main_config.show_command_output, main_config.show_command_error, f'{main_config.out_dir}/{run_dir}')
-            stats = CommandHelper.run_command_output(['awk', '/sim_insts/ {print $2}', f'stats.txt'], {}, f'{main_config.out_dir}/{run_dir}').splitlines()
-            CommandHelper.run_command(['rm', '-rf', f'{run_dir}'], {}, main_config.show_command_output, main_config.show_command_error, f'{main_config.out_dir}')
+            CommandHelper.run_command(['mkdir', '-p', f'{main_config.out_dir}/{run_dir}'], main_config.show_command_output, main_config.show_command_error)
+            CommandHelper.run_command([main_config.zstd, '-D', f'{main_config.stats_dir}/zstd-dict', '-d', '-f', f'{main_config.stats_dir}/{run_dir}/stats.txt.zst', '-o', 'stats.txt'], main_config.show_command_output, main_config.show_command_error, f'{main_config.out_dir}/{run_dir}')
+            stats = CommandHelper.run_command_output(['awk', '/sim_insts/ {print $2}', f'stats.txt'], f'{main_config.out_dir}/{run_dir}').splitlines()
+            CommandHelper.run_command(['rm', '-rf', f'{run_dir}'], main_config.show_command_output, main_config.show_command_error, f'{main_config.out_dir}')
 
             if len(stats) != 3:
                 print(f'Expected three stat results, got {len(stats)} {stats}')
@@ -91,7 +91,7 @@ if __name__ == "__main__":
                 highest = insts
                 highest_run_dirs.append(run_dir)
 
-        workload = CommandHelper.run_command_output(['cat', f'workloads.json'], {}, f'{main_config.stats_dir}/{highest_run_dirs[0]}').splitlines()
+        workload = CommandHelper.run_command_output(['cat', f'workloads.json'], f'{main_config.stats_dir}/{highest_run_dirs[0]}').splitlines()
         print(f'node {rank} highest workload {highest} {highest_run_dirs} {workload[1]}')
 
     print(f'node {rank} done')
