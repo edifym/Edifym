@@ -23,8 +23,8 @@ class CommandHelper:
                 print(f'{command[0]} error> {proc.returncode} {error.strip()}')
 
     @staticmethod
-    def run_command_output(command: List[str], new_env: Dict[str, str], cwd: str = './EdifymRunner') -> str:
-            proc = subprocess.Popen(command, cwd=cwd, env=new_env, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    def run_command_output(command: List[str], cwd: str = './EdifymRunner') -> str:
+            proc = subprocess.Popen(command, cwd=cwd, env={}, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
             output, error = proc.communicate()
 
