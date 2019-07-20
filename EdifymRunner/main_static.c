@@ -119,8 +119,6 @@ int main( int argc, char *argv[] ) {
         return -1;
     }
 
-    tasks_to_execute.function();
-
     for (int i = 0; *(tasks + i); i++) {
         task* t = find_task_by_name(&tasks_to_execute, *(tasks + i));
 
@@ -167,4 +165,30 @@ int main( int argc, char *argv[] ) {
     free(tasks);
 
     return 0;
+
+    /*tasks_to_execute.function();
+
+    for (int i = 0; i < TASK_SIZE; i++) {
+        task* t = find_task_by_name(&tasks_to_execute, ordered_task_names[i]);
+
+        if(t == NULL) {
+            printf("Horrible disaster trying to find task %s\n", ordered_task_names[i]);
+            print_all_task_names(&tasks_to_execute);
+            return -1;
+        }
+
+        if(t->function == NULL) {
+            printf("Horrible disaster function is NULL for task %s\n", t->name);
+            return -1;
+        }
+
+        if(t->init != NULL) {
+            t->init(1, 100);
+        }
+
+        m5_reset_stats(0, 0);
+        t->function();
+        m5_dump_stats(0, 0);
+    }
+    return 0;*/
 }
