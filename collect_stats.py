@@ -2,7 +2,7 @@ import json
 import os
 import sys
 import time
-import distutils
+import distutils.file_util
 
 from datetime import timedelta, datetime
 from mpi4py import MPI
