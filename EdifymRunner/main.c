@@ -136,15 +136,16 @@ int main( int argc, char *argv[] ) {
         }
 
         if(t->init != NULL) {
-
             char **task_args = str_split(argv[3 + i], ';');
             int count = 0;
-            int args[count];
+            int args[6];
 
             for (int i = 0; *(task_args + i); i++) {
                 args[i] = strtol(*(task_args + i), &end, 10);
                 count++;
             }
+
+            //printf("running with %i count %i %i %i %i %i %i\n", count, args[0], args[1], args[2], args[3], args[4], args[5]);
 
             t->init(count, args);
 

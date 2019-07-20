@@ -13,6 +13,7 @@ extern task tasks_to_execute;
     if(t == NULL) { printf("Horrible disaster trying to find task %s\n", task); return -1; } \
     if(t->init != NULL) { \
         values[0] = valone; values[1] = valtwo; values[2] = valthree; values[3] = valfour; values[4] = valfive; values[5] = valsix; \
+        /*printf("running with %i count %i %i %i %i %i %i\n", valcount, valone, valtwo, valthree, valfour, valfive, valsix);*/ \
         t->init(valcount, values); } \
     m5_dump_stats(0, 0); t->function(); m5_dump_stats(0, 0);
 
