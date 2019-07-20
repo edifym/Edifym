@@ -3,7 +3,6 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/time.h>
 #include <assert.h>
 
 extern task tasks_to_execute;
@@ -28,12 +27,6 @@ void print_all_task_names(task* t) {
         printf("%s\n", t->name);
         t = t->next_task;
     }
-}
-
-void print_time() {
-  struct timeval tv;
-  int ret = gettimeofday(&tv, NULL);
-  printf("time: %i %li %li\n", ret, tv.tv_sec, tv.tv_usec);
 }
 
 char** str_split(char* a_str, const char a_delim)
