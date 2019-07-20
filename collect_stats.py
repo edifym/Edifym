@@ -2,6 +2,7 @@ import json
 import os
 import sys
 import time
+import distutils
 
 from datetime import timedelta, datetime
 from mpi4py import MPI
@@ -55,6 +56,8 @@ if __name__ == "__main__":
         for i, chunk in enumerate(data):
             chunks[i % size].append(chunk)
     else:
+        time.sleep(0.05 * rank)
+        distutils.file_util.copy_file(f'{main_config.stats_dir}/zstd-dict', f'{main_config.out_dir}/zstd-dict', update=1)
         data = None
         chunks = None
 
@@ -64,7 +67,7 @@ if __name__ == "__main__":
     for run_dir in data:
         try:
             CommandHelper.run_command(['mkdir', '-p', f'{main_config.out_dir}/{run_dir}'], main_config.show_command_output, main_config.show_command_error)
-            CommandHelper.run_command([main_config.zstd, '-D', f'{main_config.stats_dir}/zstd-dict', '-d', '-f', f'{main_config.stats_dir}/{run_dir}/stats.txt.zst', '-o', 'stats.txt'], main_config.show_command_output, main_config.show_command_error, f'{main_config.out_dir}/{run_dir}')
+            CommandHelper.run_command([main_config.zstd, '-D', f'{main_config.out_dir}/zstd-dict', '-d', '-f', f'{main_config.stats_dir}/{run_dir}/stats.txt.zst', '-o', 'stats.txt'], main_config.show_command_output, main_config.show_command_error, f'{main_config.out_dir}/{run_dir}')
             stats = CommandHelper.run_command_output(['awk', '/sim_sec/ {print $2}', f'stats.txt'], f'{main_config.out_dir}/{run_dir}').splitlines()
             CommandHelper.run_command(['rm', '-rf', f'{run_dir}'], main_config.show_command_output, main_config.show_command_error, f'{main_config.out_dir}')
             if len(stats) != 27:
