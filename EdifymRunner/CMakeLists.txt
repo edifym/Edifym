@@ -23,6 +23,7 @@ endif()
 
 
 add_executable(EdifymRunner main.c executable_task.h)
+add_executable(StaticRunner main_static.c executable_task.h)
 
 include_directories("$ENV{M5_DIR}/../../include")
 
@@ -41,3 +42,8 @@ target_link_libraries(EdifymRunner PUBLIC ${MFIVE})
 target_link_libraries(EdifymRunner PUBLIC ${LUT})
 
 set_target_properties(EdifymRunner PROPERTIES LINK_FLAGS "-static" )
+
+target_link_libraries(StaticRunner PUBLIC ${MFIVE})
+target_link_libraries(StaticRunner PUBLIC ${LUT})
+
+set_target_properties(StaticRunner PROPERTIES LINK_FLAGS "-static" )

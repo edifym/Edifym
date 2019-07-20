@@ -9,6 +9,13 @@
 extern task tasks_to_execute;
 #define ENABLE_TRACE 0
 
+#define EXECUTE_TASK(task, valcount, valone, valtwo, valthree, valfour, valfive, valsix) t = find_task_by_name(&tasks_to_execute, task); \
+    if(t == NULL) { printf("Horrible disaster trying to find task %s\n", task); return -1; } \
+    if(t->init != NULL) { \
+        values[0] = valone; values[1] = valtwo; values[2] = valthree; values[3] = valfour; values[4] = valfive; values[5] = valsix; \
+        t->init(valcount, values); } \
+    m5_dump_stats(0, 0); t->function(); m5_dump_stats(0, 0);
+
 task* find_task_by_name(task* t, char const *name) {
     while(t != NULL) {
 #if defined(ENABLE_TRACE) && ENABLE_TRACE > 0
@@ -36,159 +43,31 @@ void print_time() {
   printf("time: %i %li %li\n", ret, tv.tv_sec, tv.tv_usec);
 }
 
-char** str_split(char* a_str, const char a_delim)
-{
-    char** result    = 0;
-    size_t count     = 0;
-    char* tmp        = a_str;
-    char* last_comma = 0;
-    char delim[2];
-    delim[0] = a_delim;
-    delim[1] = 0;
-
-    /* Count how many elements will be extracted. */
-    while (*tmp)
-    {
-        if (a_delim == *tmp)
-        {
-            count++;
-            last_comma = tmp;
-        }
-        tmp++;
-    }
-
-    /* Add space for trailing token. */
-    count += last_comma < (a_str + strlen(a_str) - 1);
-
-    /* Add space for terminating null string so caller
-       knows where the list of returned strings ends. */
-    count++;
-
-    result = malloc(sizeof(char*) * count);
-
-    if (result)
-    {
-        size_t idx  = 0;
-        char* token = strtok(a_str, delim);
-
-        while (token)
-        {
-            assert(idx < count);
-            *(result + idx++) = strdup(token);
-            token = strtok(0, delim);
-        }
-        assert(idx == count - 1);
-        *(result + idx) = 0;
-    }
-
-    return result;
-}
-
 int main( int argc, char *argv[] ) {
-
-    if(argc == 1) {
-        printf("USAGE: EdifymRunner task_size task_names task1_args taskn_args\nEXAMPLE: EdifymRunner 2 autopilot;flybywire 2;2 1\n\nTASKS:\n");
-        print_all_task_names(&tasks_to_execute);
-        return -1;
-    }
-
-    char *end;
-
-    long task_size = strtol(argv[1], &end, 10);
-
-    if(task_size == 0) {
-        return 0;
-    }
-
-    if(argc != 3 + task_size) {
-        printf("USAGE: EdifymRunner task_size task_names task1_args taskn_args\nEXAMPLE: EdifymRunner 2 autopilot;flybywire 2;2 1\n\nTASKS:\n");
-        print_all_task_names(&tasks_to_execute);
-        return -1;
-    }
 
     if(tasks_to_execute.function == NULL) {
         printf("Horrible disaster function is NULL for %s\n", tasks_to_execute.name);
         return -1;
     }
 
-    char** tasks = str_split(argv[2], ';');
+    tasks_to_execute.function();
 
-    if(!tasks) {
-        printf("USAGE: EdifymRunner task_size task_names task1_args taskn_args\nEXAMPLE: EdifymRunner 2 autopilot;flybywire 2;2 1\n\nTASKS:\n");
-        print_all_task_names(&tasks_to_execute);
-        return -1;
-    }
+    task* t = NULL;
+    int values[6];
 
-    for (int i = 0; *(tasks + i); i++) {
-        task* t = find_task_by_name(&tasks_to_execute, *(tasks + i));
-
-        if(t == NULL) {
-            printf("Horrible disaster trying to find task %s\n", *(tasks + i));
-            print_all_task_names(&tasks_to_execute);
-            return -1;
-        }
-
-        if(t->function == NULL) {
-            printf("Horrible disaster function is NULL for task %s\n", t->name);
-            return -1;
-        }
-
-        if(t->init != NULL) {
-
-            char **task_args = str_split(argv[3 + i], ';');
-            int count = 0;
-            int args[count];
-
-            for (int i = 0; *(task_args + i); i++) {
-                args[i] = strtol(*(task_args + i), &end, 10);
-                count++;
-            }
-
-            t->init(count, args);
-
-            for (int i = 0; *(task_args + i); i++) {
-                free(*(task_args + i));
-            }
-
-            free(task_args);
-        }
-
-        m5_dump_stats(0, 0);
-        t->function();
-        m5_dump_stats(0, 0);
-    }
-
-    for (int i = 0; *(tasks + i); i++) {
-        free(*(tasks + i));
-    }
-
-    free(tasks);
+    EXECUTE_TASK("test_ppm_task", 4, 1, 0, 1, 1, 0, 0)
+    EXECUTE_TASK("servo_transmit", 1, 0, 0, 0, 0, 0, 0)
+    EXECUTE_TASK("send_data_to_autopilot_task", 4, 0, 1, 1, 1, 0, 0)
+    EXECUTE_TASK("check_mega128_values_task", 4, 0, 1, 0, 1, 0, 0)
+    EXECUTE_TASK("check_failsafe_task", 1, 0, 0, 0, 0, 0, 0)
+    EXECUTE_TASK("stabilisation_task", 1, 1, 0, 0, 0, 0, 0)
+    EXECUTE_TASK("reporting_task", 1, 0, 0, 0, 0, 0, 0)
+    EXECUTE_TASK("receive_gps_data_task", 6, 0, 3, 0, 0, 0, 6)
+    EXECUTE_TASK("radio_control_task", 5, 1, 4, 1, 1, 0, 0)
+    EXECUTE_TASK("navigation_task", 2, 0, 3, 0, 0, 0, 0)
+    EXECUTE_TASK("link_fbw_send", 1, 1, 0, 0, 0, 0, 0)
+    EXECUTE_TASK("climb_control_task", 5, 0, 1, 7, 6, 1, 0)
+    EXECUTE_TASK("altitude_control_task", 1, 1, 0, 0, 0, 0, 0)
 
     return 0;
-
-    /*tasks_to_execute.function();
-
-    for (int i = 0; i < TASK_SIZE; i++) {
-        task* t = find_task_by_name(&tasks_to_execute, ordered_task_names[i]);
-
-        if(t == NULL) {
-            printf("Horrible disaster trying to find task %s\n", ordered_task_names[i]);
-            print_all_task_names(&tasks_to_execute);
-            return -1;
-        }
-
-        if(t->function == NULL) {
-            printf("Horrible disaster function is NULL for task %s\n", t->name);
-            return -1;
-        }
-
-        if(t->init != NULL) {
-            t->init(1, 100);
-        }
-
-        m5_reset_stats(0, 0);
-        t->function();
-        m5_dump_stats(0, 0);
-    }
-    return 0;*/
 }
