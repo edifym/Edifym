@@ -13,6 +13,8 @@ def get_immediate_subdirectories(a_dir: str) -> List[str]:
     subdirs = []
 
     for name in dirs:
+        if name == "zstd-dict" or name == "dict.pkl":
+            continue
         if os.path.isdir(os.path.join(a_dir, name)):
             subdirs.append(name)
 
@@ -95,12 +97,3 @@ if __name__ == "__main__":
         print(f'node {rank} highest workload {highest} {highest_run_dirs} {workload[1]}')
 
     print(f'node {rank} done')
-
-    '''import matplotlib.pylab as plt
-
-    lists = [(x[5:], y) for x, y in sorted(vals_dict.items())] # sorted by key, return a list of tuples
-
-    x, y = zip(*lists)  # unpack a list of pairs into two tuples
-
-    plt.plot(x, y)
-    plt.show()'''

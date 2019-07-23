@@ -20,7 +20,9 @@ def get_immediate_subdirectories(a_dir: str, max_timestamp: float) -> List[str]:
         if name == "zstd-dict" or name == "dict.pkl":
             continue
         path = os.path.join(a_dir, name)
-        if os.path.isdir(path) and os.path.getmtime(path) < max_timestamp:
+        stats_file = os.path.join(path, 'stats.txt.zst')
+        ctime = os.path.getmtime(stats_file)
+        if os.path.isdir(path) and ctime < max_timestamp:
             subdirs.append(name)
 
     return subdirs
@@ -51,7 +53,7 @@ if __name__ == "__main__":
 
     if rank == 0:
         first_timestamp = os.path.getmtime(f'{main_config.stats_dir}/run_0_1')
-        max_timestamp = time.mktime((datetime.fromtimestamp(first_timestamp) + timedelta(minutes=150)).timetuple())
+        max_timestamp = time.mktime((datetime.fromtimestamp(first_timestamp) + timedelta(minutes=15)).timetuple())
         data = get_immediate_subdirectories(main_config.stats_dir, max_timestamp)
         print(f'master data size {len(data)}')
         # dividing data into chunks
@@ -66,26 +68,25 @@ if __name__ == "__main__":
 
     data = comm.scatter(chunks, root=0)
 
-    totals = []
+    total_zero = 0
+    total_twentysix = 0
+    total_other = 0
     for run_dir in data:
         try:
             CommandHelper.run_command(['mkdir', '-p', f'{main_config.out_dir}/{run_dir}'], main_config.show_command_output, main_config.show_command_error)
             CommandHelper.run_command(['zstd', '-D', f'{main_config.out_dir}/zstd-dict', '-d', '-f', f'{main_config.stats_dir}/{run_dir}/stats.txt.zst', '-o', 'stats.txt'], main_config.show_command_output, main_config.show_command_error, f'{main_config.out_dir}/{run_dir}')
             stats = CommandHelper.run_command_output(['awk', '/sim_sec/ {print $2}', f'stats.txt'], f'{main_config.out_dir}/{run_dir}').splitlines()
             CommandHelper.run_command(['rm', '-rf', f'{run_dir}'], main_config.show_command_output, main_config.show_command_error, f'{main_config.out_dir}')
+
             if len(stats) != 27:
                 print(f'node {rank} run_dir {run_dir} incorrect stats length {len(stats)} {stats}')
-            else:
-                total_time_for_tasks = 0
-                prev_time = 0
-                for i in range(26):
-                    if i % 2 == 0:
-                        prev_time = int(stats[i][2:])
-                    else:
-                        #print(f'node {rank} adding {int(stats[i][2:]):,} {int(stats[i-1][2:]):,}')
-                        total_time_for_tasks += int(stats[i][2:]) - int(stats[i-1][2:])
-                #print(f'node {rank} adding total {total_time_for_tasks}')
-                totals.append(total_time_for_tasks)
+
+            if len(stats) == 0:
+                total_zero += 1
+            elif len(stats) == 26:
+                total_twentysix += 1
+            elif len(stats) != 27:
+                total_other += 1
         except Exception as inst:
             print(type(inst))
             print(inst.args)
@@ -93,26 +94,19 @@ if __name__ == "__main__":
             print(sys.exc_info()[0])
 
     print(f'node {rank} gather')
-    newData = comm.gather(totals, root=0)
+    newData = comm.gather((total_zero, total_twentysix, total_other), root=0)
 
     if rank == 0:
-        import pickle
-        flat_list = [item for sublist in newData for item in sublist]
-        print(f'Node {rank} total results {len(flat_list)}')
+        total_zero = 0
+        total_twentysix = 0
+        total_other = 0
 
-        vals_dict = {}
-        for val in flat_list:
-            if val in vals_dict:
-                vals_dict[val] += 1
-            else:
-                vals_dict[val] = 1
-        print(max(flat_list))
-        print(min(flat_list))
-        print(vals_dict)
+        for results in newData:
+            total_zero += results[0]
+            total_twentysix += results[1]
+            total_other += results[2]
 
-        f = open(f'{main_config.stats_dir}/dict.pkl', 'wb')
-        pickle.dump(vals_dict, f)
-        f.close()
+        print(f'Node {rank} results {total_zero} {total_twentysix} {total_other} {total_zero + total_twentysix + total_other}')
 
         end = datetime.now()
         print(f'node {rank} done {end - start}')
