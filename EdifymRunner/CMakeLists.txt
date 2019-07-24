@@ -12,6 +12,7 @@ SET(CMAKE_C_COMPILER   aarch64-linux-gnu-gcc)
 SET(CMAKE_CXX_COMPILER aarch64-linux-gnu-g++)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2 -s -Wl,--gc-sections -fno-stack-protector ")
+#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2 -g3 -fno-stack-protector ")
 
 if(NOT DEFINED ENV{M5_DIR})
     message(FATAL_ERROR "Please set the environment variable M5_DIR to where gem5/util/m5 is located.")
@@ -24,6 +25,7 @@ endif()
 
 add_executable(EdifymRunner main.c executable_task.h)
 add_executable(StaticRunner main_static.c executable_task.h)
+add_executable(StaticRunner_nofp main_static_without_function_pointer.c executable_task.h)
 
 include_directories("$ENV{M5_DIR}/../../include")
 
@@ -47,3 +49,8 @@ target_link_libraries(StaticRunner PUBLIC ${MFIVE})
 target_link_libraries(StaticRunner PUBLIC ${LUT})
 
 set_target_properties(StaticRunner PROPERTIES LINK_FLAGS "-static" )
+
+target_link_libraries(StaticRunner_nofp PUBLIC ${MFIVE})
+target_link_libraries(StaticRunner_nofp PUBLIC ${LUT})
+
+set_target_properties(StaticRunner_nofp PROPERTIES LINK_FLAGS "-static" )
