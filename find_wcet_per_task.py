@@ -89,9 +89,12 @@ if __name__ == "__main__":
         highest = 0
         highest_run_dirs = []
         for run_dir, insts in totals:
-            if insts >= highest:
+            if insts == highest:
                 highest = insts
                 highest_run_dirs.append(run_dir)
+            elif insts > highest:
+                highest = insts
+                highest_run_dirs = [run_dir]
 
         workload = CommandHelper.run_command_output(['cat', f'workloads.json'], f'{main_config.stats_dir}/{highest_run_dirs[0]}').splitlines()
         print(f'node {rank} highest workload {highest} {highest_run_dirs} {workload[1]}')
