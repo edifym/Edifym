@@ -1,12 +1,23 @@
 import json
 import sys
 import os
-import datetime
 from mpi4py import MPI
+from typing import List
 
 from MainConfig import MainConfig
-from BenchmarkConfig import BenchmarkConfig
-from Tasks.GenerateWcetPerTaskSimulationsTask import GenerateWcetPerTaskSimulationsTask
+from BenchmarkConfig import BenchmarkConfig, Task
+from Tasks.ValidateSingleSimulationTask import ValidateSingleSimulationTask
+from Tasks.GetRunArgsToValidateTask import GetRunArgsToValidateTask
+
+
+def get_sorted_list(tasks: List[Task], task_names: List[str]) -> List[Task]:
+    sorted_tasks = []
+
+    for name in task_names:
+        task, = [task for task in tasks if task.name == name]
+        sorted_tasks.append(task)
+
+    return sorted_tasks
 
 
 if __name__ == "__main__":
@@ -33,36 +44,30 @@ if __name__ == "__main__":
 
     benchmark, = [bench for bench in benchmark_config.benchmarks if bench.name == main_config.benchmark]
 
-    start = datetime.datetime.now()
-
+    run_id = 0
     if rank == 0:
-        data = benchmark.tasks
-        print(f'master data size {len(data)}')
+        tasks_one = get_sorted_list(benchmark.tasks, ["navigation_task", "link_fbw_send"])
+        tasks_two = get_sorted_list(benchmark.tasks, ["test_ppm_task", "servo_transmit"])
+        run_iter = iter(GetRunArgsToValidateTask(main_config, [tasks_one, tasks_two], rank).execute())
+
         # dividing data into chunks
         chunks = [[] for _ in range(size)]
-        for i, chunk in enumerate(data):
-            chunks[i % size].append(chunk)
+        i = 0
+        while True:
+            if i % size == 0:
+                i += 1
+                if i > 1:
+                    print(f'sending {i} {chunks}')
+                    data = comm.scatter(chunks, root=0)
+                    chunks = [[] for _ in range(size)]
+            chunks[i % size].append(next(run_iter))
+            i += 1
     else:
-        data = None
-        chunks = None
+        while True:
+            chunks = None
+            run_args_chunk = comm.scatter(chunks, root=0)
 
-    data = comm.scatter(chunks, root=0)
+            for run_args in run_args_chunk:
+                ValidateSingleSimulationTask(main_config, [run_args[0], run_args[1]], rank, run_id, 2, 624).execute()
+                run_id += 1
 
-    print(f'Node {rank} {len(data)} {data}')
-
-    total_values = 0
-
-    for task in data:
-        task_values = 1
-        for value in task.values:
-            task_values *= len(value.values)
-        total_values += task_values
-
-    total_size = total_values
-
-    print(f'Node {rank} total_size {total_size:,} total_values {total_values:,}')
-
-    GenerateWcetPerTaskSimulationsTask(main_config, data, rank).execute()
-
-    end = datetime.datetime.now()
-    print(f'node {rank} done {end - start}')

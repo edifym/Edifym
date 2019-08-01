@@ -6,10 +6,9 @@ from Tasks.ITask import ITask
 from typing import List, Iterator
 
 from BenchmarkConfig import Task
-from Tasks.RunSingleSimulationTask import RunSingleSimulationTask
 
 
-class GenerateWcetPerTaskSimulationsTask(ITask):
+class GetRunArgsToValidateTask(ITask):
     main_config: MainConfig
     tasks: List[List[Task]]
     rank: int
@@ -47,11 +46,12 @@ class GenerateWcetPerTaskSimulationsTask(ITask):
                 yield f'{run_args} {extra_run_args}'
         else:
             for extra_run_args in self.get_workloads(tasks[0]):
-                yield self.get_run_args(tasks[1:], f'{run_args} {extra_run_args}')
+                for ret in self.get_run_args(tasks[1:], f'{run_args} {extra_run_args}'):
+                    yield ret
 
-    def execute(self):
+    def execute(self) -> Iterator[List[str]]:
         start = datetime.datetime.now()
-        print(f'node {self.rank} starting GenerateWcetPerTaskSimulationsTask {len(self.tasks)} {start}')
+        print(f'node {self.rank} starting GetRunArgsToValidateTask {len(self.tasks)} {start}')
 
         run_id = 1
         args_one = f"{self.main_config.executable} {len(self.tasks[0])} "
@@ -65,8 +65,7 @@ class GenerateWcetPerTaskSimulationsTask(ITask):
 
         for run_args_one in self.get_run_args(self.tasks[0], args_one):
             for run_args_two in self.get_run_args(self.tasks[1], args_two):
-                RunSingleSimulationTask(self.main_config, [run_args_one, run_args_two], self.rank, run_id, 1).execute()
-                run_id += 1
+                yield [run_args_one, run_args_two]
 
         end = datetime.datetime.now()
-        print(f'node {self.rank} GenerateWcetPerTaskSimulationsTask done {end - start}')
+        print(f'node {self.rank} GetRunArgsToValidateTask done {end - start}')

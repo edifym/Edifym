@@ -71,7 +71,7 @@ class GenerateThreadsAndValuesSimulationsTask(ITask):
 
     def execute(self):
         start = datetime.datetime.now()
-        print(f'node {self.rank} starting GenerateThreadsSimulationsTask {len(self.benchmark.tasks)} {start}')
+        print(f'node {self.rank} starting GenerateThreadsAndValuesSimulationsTask {len(self.benchmark.tasks)} {start}')
 
         run_id = 1
         for task_permutation in self.produce_task_permutations(self.benchmark.tasks):
@@ -83,4 +83,4 @@ class GenerateThreadsAndValuesSimulationsTask(ITask):
                     run_id += 1
 
         end = datetime.datetime.now()
-        print(f'node {self.rank} GenerateThreadsSimulationsTask done {end - start}')
+        print(f'node {self.rank} GenerateThreadsAndValuesSimulationsTask done {end - start}')

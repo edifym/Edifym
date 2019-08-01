@@ -55,7 +55,7 @@ class GenerateWcetPerTaskSimulationsTask(ITask):
 
     def execute(self):
         start = datetime.datetime.now()
-        print(f'node {self.rank} starting GenerateThreadsSimulationsTask {len(self.tasks)} {start}')
+        print(f'node {self.rank} starting GenerateWcetPerTaskSimulationsTask {len(self.tasks)} {start}')
 
         run_id = 1
         for task in self.tasks:
@@ -64,4 +64,4 @@ class GenerateWcetPerTaskSimulationsTask(ITask):
                 run_id += 1
 
         end = datetime.datetime.now()
-        print(f'node {self.rank} GenerateThreadsSimulationsTask done {end - start}')
+        print(f'node {self.rank} GenerateWcetPerTaskSimulationsTask done {end - start}')
