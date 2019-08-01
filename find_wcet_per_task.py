@@ -4,21 +4,7 @@ import sys
 from mpi4py import MPI
 
 from MainConfig import MainConfig
-from typing import List
 from CommandHelper import CommandHelper
-
-
-def get_immediate_subdirectories(a_dir: str) -> List[str]:
-    dirs = os.listdir(a_dir)
-    subdirs = []
-
-    for name in dirs:
-        if name == "zstd-dict" or name == "dict.pkl":
-            continue
-        if os.path.isdir(os.path.join(a_dir, name)):
-            subdirs.append(name)
-
-    return subdirs
 
 
 if __name__ == "__main__":
@@ -44,7 +30,7 @@ if __name__ == "__main__":
             print(sys.exc_info()[0])
 
     if rank == 0:
-        dirs = get_immediate_subdirectories(main_config.stats_dir)
+        dirs = CommandHelper.get_immediate_subdirectories(main_config.stats_dir)
         runs = {}
         for dir in dirs:
             split_dir = dir.split('_')

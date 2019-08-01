@@ -1,9 +1,6 @@
 import subprocess
 import os
-from typing import List, Dict
-import MainConfig
-from BenchmarkConfig import Benchmark
-from slinkie import Slinkie
+from typing import List
 
 
 class CommandHelper:
@@ -29,3 +26,17 @@ class CommandHelper:
             output, error = proc.communicate()
 
             return output
+
+    @staticmethod
+    def get_immediate_subdirectories(a_dir: str) -> List[str]:
+        dirs = os.listdir(a_dir)
+        subdirs = []
+
+        for name in dirs:
+            if name == "zstd-dict" or name == "dict.pkl":
+                continue
+            path = os.path.join(a_dir, name)
+            if os.path.isdir(path):
+                subdirs.append(name)
+
+        return subdirs
