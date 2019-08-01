@@ -49,11 +49,13 @@ if __name__ == "__main__":
             print(inst)
             print(sys.exc_info()[0])
 
+    total_dirs = 0
     if rank == 0:
         first_timestamp = os.path.getmtime(f'{main_config.stats_dir}/run_0_1')
-        max_timestamp = time.mktime((datetime.fromtimestamp(first_timestamp) + timedelta(minutes=150)).timetuple())
+        max_timestamp = time.mktime((datetime.fromtimestamp(first_timestamp) + timedelta(minutes=15)).timetuple())
         data = get_immediate_subdirectories(main_config.stats_dir, max_timestamp)
-        print(f'master data size {len(data)}')
+        total_dirs = len(data)
+        print(f'master data size {total_dirs}')
         # dividing data into chunks
         chunks = [[] for _ in range(size)]
         for i, chunk in enumerate(data):
@@ -67,13 +69,22 @@ if __name__ == "__main__":
     data = comm.scatter(chunks, root=0)
 
     totals = []
+    total_zero = 0
+    total_twentysix = 0
+    total_other = 0
     for run_dir in data:
         try:
             CommandHelper.run_command(['mkdir', '-p', f'{main_config.out_dir}/{run_dir}'], main_config.show_command_output, main_config.show_command_error)
             CommandHelper.run_command(['zstd', '-D', f'{main_config.out_dir}/zstd-dict', '-d', '-f', f'{main_config.stats_dir}/{run_dir}/stats.txt.zst', '-o', 'stats.txt'], main_config.show_command_output, main_config.show_command_error, f'{main_config.out_dir}/{run_dir}')
             stats = CommandHelper.run_command_output(['awk', '/sim_sec/ {print $2}', f'stats.txt'], f'{main_config.out_dir}/{run_dir}').splitlines()
             CommandHelper.run_command(['rm', '-rf', f'{run_dir}'], main_config.show_command_output, main_config.show_command_error, f'{main_config.out_dir}')
-            if len(stats) != 27:
+            if len(stats) == 0:
+                total_zero += 1
+                print(f'node {rank} run_dir {run_dir} incorrect stats length {len(stats)} {stats}')
+            elif len(stats) == 26:
+                total_twentysix += 1
+            elif len(stats) != 27:
+                total_other += 1
                 print(f'node {rank} run_dir {run_dir} incorrect stats length {len(stats)} {stats}')
             else:
                 total_time_for_tasks = 0
@@ -93,12 +104,15 @@ if __name__ == "__main__":
             print(sys.exc_info()[0])
 
     print(f'node {rank} gather')
-    newData = comm.gather(totals, root=0)
+    newData = comm.gather((totals, total_zero, total_twentysix, total_other), root=0)
 
     if rank == 0:
         import pickle
-        flat_list = [item for sublist in newData for item in sublist]
-        print(f'Node {rank} total results {len(flat_list)}')
+        flat_list = [item for sublist in newData for item in sublist[0]]
+        total_zero = sum([sublist[1] for sublist in newData])
+        total_twentysix = sum([sublist[2] for sublist in newData])
+        total_other = sum([sublist[3] for sublist in newData])
+        print(f'Node {rank} total dirs {total_dirs} total results {len(flat_list)} zero_stats {total_zero} twentysix_stats {total_twentysix} other_stats {total_other}')
 
         vals_dict = {}
         for val in flat_list:
