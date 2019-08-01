@@ -72,7 +72,7 @@ if __name__ == "__main__":
                         total_time_for_tasks += int(stats[i][2:]) - int(stats[i-1][2:])
                 #print(f'node {rank} adding total {total_time_for_tasks}')
                 if total_time_for_tasks == find_runs_with_this_time:
-                    totals.append(total_time_for_tasks)
+                    totals.append(run_dir)
         except Exception as inst:
             print(type(inst))
             print(inst.args)
