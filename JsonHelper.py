@@ -20,7 +20,7 @@ class JsonHelper:
             jsonpickle.set_encoder_options('simplejson', sort_keys=True, indent=4)
         else:
             print('Couldn\'t load simplejson')
-        with open('workloads.json', 'r') as outfile:
+        with open(filepath, 'r') as outfile:
             contents = outfile.read()
             json_input = jsonpickle.decode(contents)
-            return json_input[1]
+            return (json_input[1], json_input[2])

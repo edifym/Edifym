@@ -10,6 +10,7 @@ from mpi4py import MPI
 from MainConfig import MainConfig
 from typing import List
 from CommandHelper import CommandHelper
+from JsonHelper import JsonHelper
 
 
 def get_immediate_subdirectories(a_dir: str, max_timestamp: float) -> List[str]:
@@ -52,7 +53,7 @@ if __name__ == "__main__":
     total_dirs = 0
     if rank == 0:
         first_timestamp = os.path.getmtime(f'{main_config.stats_dir}/run_0_1')
-        max_timestamp = time.mktime((datetime.fromtimestamp(first_timestamp) + timedelta(minutes=15)).timetuple())
+        max_timestamp = time.mktime((datetime.fromtimestamp(first_timestamp) + timedelta(minutes=120)).timetuple())
         data = get_immediate_subdirectories(main_config.stats_dir, max_timestamp)
         total_dirs = len(data)
         print(f'master data size {total_dirs}')
@@ -72,31 +73,26 @@ if __name__ == "__main__":
     total_zero = 0
     total_twentysix = 0
     total_other = 0
+    highest_runtime = 0
+    highest_dir = ""
     for run_dir in data:
         try:
-            CommandHelper.run_command(['mkdir', '-p', f'{main_config.out_dir}/{run_dir}'], main_config.show_command_output, main_config.show_command_error)
-            CommandHelper.run_command(['zstd', '-D', f'{main_config.out_dir}/zstd-dict', '-d', '-f', f'{main_config.stats_dir}/{run_dir}/stats.txt.zst', '-o', 'stats.txt'], main_config.show_command_output, main_config.show_command_error, f'{main_config.out_dir}/{run_dir}')
-            stats = CommandHelper.run_command_output(['awk', '/sim_sec/ {print $2}', f'stats.txt'], f'{main_config.out_dir}/{run_dir}').splitlines()
-            CommandHelper.run_command(['rm', '-rf', f'{run_dir}'], main_config.show_command_output, main_config.show_command_error, f'{main_config.out_dir}')
-            if len(stats) == 0:
+            stats = JsonHelper.read_stats_from_workloads(f'{main_config.stats_dir}/{run_dir}/workloads.json')
+
+            if stats[1] == 0:
                 total_zero += 1
-                print(f'node {rank} run_dir {run_dir} incorrect stats length {len(stats)} {stats}')
-            elif len(stats) == 26:
+                print(f'node {rank} run_dir {run_dir} incorrect stats length {stats[1]} {stats}')
+            elif stats[1] == 14:
                 total_twentysix += 1
-            elif len(stats) != 27:
+            elif stats[1] != 15:
                 total_other += 1
-                print(f'node {rank} run_dir {run_dir} incorrect stats length {len(stats)} {stats}')
+                print(f'node {rank} run_dir {run_dir} incorrect stats length {stats[1]} {stats}')
             else:
-                total_time_for_tasks = 0
-                prev_time = 0
-                for i in range(26):
-                    if i % 2 == 0:
-                        prev_time = int(stats[i][2:])
-                    else:
-                        #print(f'node {rank} adding {int(stats[i][2:]):,} {int(stats[i-1][2:]):,}')
-                        total_time_for_tasks += int(stats[i][2:]) - int(stats[i-1][2:])
-                #print(f'node {rank} adding total {total_time_for_tasks}')
-                totals.append(total_time_for_tasks)
+                totals.append(stats[0])
+
+                if stats[0] > highest_runtime:
+                    highest_runtime = stats[0]
+                    highest_dir = run_dir
         except Exception as inst:
             print(type(inst))
             print(inst.args)
@@ -112,7 +108,7 @@ if __name__ == "__main__":
         total_zero = sum([sublist[1] for sublist in newData])
         total_twentysix = sum([sublist[2] for sublist in newData])
         total_other = sum([sublist[3] for sublist in newData])
-        print(f'Node {rank} total dirs {total_dirs} total results {len(flat_list)} zero_stats {total_zero} twentysix_stats {total_twentysix} other_stats {total_other}')
+        print(f'Node {rank} total dirs {total_dirs} total results {len(flat_list)} zero_stats {total_zero} twentysix_stats(now 14) {total_twentysix} other_stats {total_other}')
 
         vals_dict = {}
         for val in flat_list:
@@ -129,6 +125,6 @@ if __name__ == "__main__":
         f.close()
 
         end = datetime.now()
-        print(f'node {rank} done {end - start}')
+        print(f'node {rank} done {end - start} - highest run_dir {highest_dir}')
     else:
-        print(f'node {rank} done')
+        print(f'node {rank} done - highest run_dir {highest_dir}')
