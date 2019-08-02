@@ -39,9 +39,9 @@ class ValidateSingleSimulationTask(ITask):
             CommandHelper.run_command(['rm', f'-rf', f'{self.main_config.out_dir}/run_{self.rank}_{self.run_id}'], self.main_config.show_command_output, self.main_config.show_command_error)
             CommandHelper.run_command(['mkdir', '-p', f'{self.main_config.stats_dir}/run_{self.rank}_{self.run_id}'], self.main_config.show_command_output, self.main_config.show_command_error)
 
-            if len(stats) == 17:
+            if len(stats) == 15:
                 total_time_for_tasks = 0
-                for i in range(16):
+                for i in range(14):
                     if i % 2 != 0:
                         total_time_for_tasks += int(stats[i][2:]) - int(stats[i - 1][2:])
 
