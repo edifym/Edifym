@@ -7,6 +7,7 @@ from typing import List, Iterator
 
 from BenchmarkConfig import Benchmark, Task
 from Tasks.RunSingleSimulationTask import RunSingleSimulationTask
+from Tasks.ValidateSingleSimulationTask import ValidateSingleSimulationTask
 
 
 class GenerateThreadsSimulationsTask(ITask):
@@ -57,7 +58,7 @@ class GenerateThreadsSimulationsTask(ITask):
                 core_two = task_permutation[x:]
                 run_args: List[str] = [self.get_run_args(core_one), self.get_run_args(core_two)]
 
-                RunSingleSimulationTask(self.main_config, run_args, self.rank, run_id, self.main_config.num_cpus).execute()
+                ValidateSingleSimulationTask(self.main_config, run_args, self.rank, run_id, self.main_config.num_cpus, 6000).execute()
 
                 run_id += 1
 
