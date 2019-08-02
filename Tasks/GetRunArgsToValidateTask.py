@@ -53,7 +53,6 @@ class GetRunArgsToValidateTask(ITask):
         start = datetime.datetime.now()
         print(f'node {self.rank} starting GetRunArgsToValidateTask {len(self.tasks)} {start}')
 
-        run_id = 1
         args_one = f"{self.main_config.executable} {len(self.tasks[0])} "
         args_two = f"{self.main_config.executable} {len(self.tasks[1])} "
 

@@ -12,15 +12,15 @@ class ValidateSingleSimulationTask(ITask):
     workloads: List[str]
     run_id: int
     rank: int
-    find_runs_with_this_time: int
+    find_runs_higher_than_this: int
 
-    def __init__(self, main_config: MainConfig, workloads: List[str], rank: int, run_id: int, num_cpus: int, find_runs_with_this_time: int):
+    def __init__(self, main_config: MainConfig, workloads: List[str], rank: int, run_id: int, num_cpus: int, find_runs_higher_than_this: int):
         self.main_config = main_config
         self.num_cpus = num_cpus
         self.workloads = workloads
         self.run_id = run_id
         self.rank = rank
-        self.find_runs_with_this_time = find_runs_with_this_time
+        self.find_runs_higher_than_this = find_runs_higher_than_this
 
     def execute(self):
         try:
@@ -44,7 +44,7 @@ class ValidateSingleSimulationTask(ITask):
                     if i % 2 != 0:
                         total_time_for_tasks += int(stats[i][2:]) - int(stats[i - 1][2:])
 
-                if total_time_for_tasks > self.find_runs_with_this_time:
+                if total_time_for_tasks > self.find_runs_higher_than_this:
                     print(f'node {self.rank} found higher simulation time {total_time_for_tasks} for workload {self.workloads}')
 
                 CommandHelper.run_command(['mkdir', '-p', f'{self.main_config.stats_dir}/run_{self.rank}_{self.run_id}'], self.main_config.show_command_output, self.main_config.show_command_error)
