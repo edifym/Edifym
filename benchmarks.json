@@ -58,15 +58,6 @@
         "values": [0, 1]
       }]
     },{
-      "name": "navigation_task",
-      "values": [{
-        "name": "pprz_mode",
-        "values": [0, 1, 2, 3, 4]
-      },{
-        "name": "vertical_mode",
-        "values": [0, 1, 2, 3, 4]
-      }]
-    },{
       "name": "link_fbw_send",
       "values": [{
         "name": "spi_cur_slave",
@@ -137,15 +128,6 @@
       "values": [{
         "name": "ir_estim_mode",
         "values": [1]
-      }]
-    },{
-      "name": "navigation_task",
-      "values": [{
-        "name": "pprz_mode",
-        "values": [3]
-      },{
-        "name": "vertical_mode",
-        "values": [0]
       }]
     },{
       "name": "link_fbw_send",
