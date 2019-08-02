@@ -46,8 +46,8 @@ if __name__ == "__main__":
 
     run_id = 0
     if rank == 0:
-        tasks_one = get_sorted_list(benchmark.tasks, ["send_data_to_autopilot_task", "check_failsafe_task", "reporting_task", "navigation_task", "stabilisation_task", "link_fbw_send", "servo_transmit", "altitude_control_task", "receive_gps_data_task"])
-        tasks_two = get_sorted_list(benchmark.tasks, ["check_mega128_values_task", "radio_control_task", "test_ppm_task", "climb_control_task"])
+        tasks_one = get_sorted_list(benchmark.tasks, ["link_fbw_send", "check_failsafe_task", "altitude_control_task"])
+        tasks_two = get_sorted_list(benchmark.tasks, ["stabilisation_task", "check_mega128_values_task", "send_data_to_autopilot_task", "test_ppm_task"])
         run_iter = iter(GetRunArgsToValidateTask(main_config, [tasks_one, tasks_two], rank).execute())
 
         # dividing data into chunks
@@ -67,6 +67,6 @@ if __name__ == "__main__":
             run_args_chunk = comm.scatter(chunks, root=0)
 
             for run_args in run_args_chunk:
-                ValidateSingleSimulationTask(main_config, [run_args[0], run_args[1]], rank, run_id, 2, 624).execute()
+                ValidateSingleSimulationTask(main_config, [run_args[0], run_args[1]], rank, run_id, 2, 115).execute()
                 run_id += 1
 
