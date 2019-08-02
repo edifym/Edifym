@@ -39,9 +39,9 @@ class ValidateSingleSimulationTask(ITask):
             CommandHelper.run_command(['rm', f'-rf', f'{self.main_config.out_dir}/run_{self.rank}_{self.run_id}'], self.main_config.show_command_output, self.main_config.show_command_error)
             CommandHelper.run_command(['mkdir', '-p', f'{self.main_config.stats_dir}/run_{self.rank}_{self.run_id}'], self.main_config.show_command_output, self.main_config.show_command_error)
 
-            if len(stats) == (len(workloads[0]) + len(workloads[1]))*2 + 1:
+            if len(stats) == 17:
                 total_time_for_tasks = 0
-                for i in range((len(workloads[0]) + len(workloads[1]))*2):
+                for i in range(16):
                     if i % 2 != 0:
                         total_time_for_tasks += int(stats[i][2:]) - int(stats[i - 1][2:])
 
@@ -60,6 +60,8 @@ class ValidateSingleSimulationTask(ITask):
             print(f'AttributeError> {e}')
         except AssertionError as e:
             print(f'AssertionError> {e}')
+        except NameError as e:
+            print(f'NameError> {e}')
         except:
             print(f'Error> {sys.exc_info()[0]}')
 
