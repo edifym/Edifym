@@ -46,8 +46,8 @@ if __name__ == "__main__":
 
     run_id = 0
     if rank == 0:
-        tasks_one = get_sorted_list(benchmark.tasks, ["navigation_task", "link_fbw_send"])
-        tasks_two = get_sorted_list(benchmark.tasks, ["test_ppm_task", "servo_transmit"])
+        tasks_one = get_sorted_list(benchmark.tasks, ["send_data_to_autopilot_task", "check_failsafe_task", "reporting_task", "navigation_task", "stabilisation_task", "link_fbw_send", "servo_transmit", "altitude_control_task", "receive_gps_data_task"])
+        tasks_two = get_sorted_list(benchmark.tasks, ["check_mega128_values_task", "radio_control_task", "test_ppm_task", "climb_control_task"])
         run_iter = iter(GetRunArgsToValidateTask(main_config, [tasks_one, tasks_two], rank).execute())
 
         # dividing data into chunks
@@ -57,7 +57,6 @@ if __name__ == "__main__":
             if i % size == 0:
                 i += 1
                 if i > 1:
-                    print(f'sending {i} {chunks}')
                     data = comm.scatter(chunks, root=0)
                     chunks = [[] for _ in range(size)]
             chunks[i % size].append(next(run_iter))
