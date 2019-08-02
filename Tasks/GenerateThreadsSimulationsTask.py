@@ -13,17 +13,17 @@ from Tasks.ValidateSingleSimulationTask import ValidateSingleSimulationTask
 class GenerateThreadsSimulationsTask(ITask):
     main_config: MainConfig
     benchmark: Benchmark
-    skip: int
+    skip: float
     rank: int
 
-    def __init__(self, main_config: MainConfig, benchmark: Benchmark, rank: int, skip: int):
+    def __init__(self, main_config: MainConfig, benchmark: Benchmark, rank: int, skip: float):
         self.main_config = main_config
         self.benchmark = benchmark
         self.skip = skip
         self.rank = rank
 
     def produce_task_permutations(self, tasks: List[Task]) -> Iterator[List[Task]]:
-        for workloads in itertools.islice(itertools.permutations(tasks, len(tasks)), self.rank * self.skip, (self.rank + 1) * self.skip):
+        for workloads in itertools.islice(itertools.permutations(tasks, len(tasks)), int(self.rank * self.skip), int((self.rank + 1) * self.skip) + 1):
             yield workloads
 
     def get_run_args(self, tasks: List[Task]) -> str:

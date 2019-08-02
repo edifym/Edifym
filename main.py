@@ -52,7 +52,7 @@ if __name__ == "__main__":
 
     total_size = total_permutations*(len(benchmark.tasks) + 1)*total_values
 
-    skip = int(total_permutations/size)
+    skip = total_permutations/size
     print(f'Node {rank} {hostname} total_size {total_size:,} total_permutations {total_permutations:,} total_values {total_values:,} skip {skip:,}')
 
     GenerateThreadsSimulationsTask(main_config, benchmark, rank, skip).execute()
