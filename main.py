@@ -48,14 +48,14 @@ if __name__ == "__main__":
         for value in task.values:
             total_values *= len(value.values)
             task_count *= len(value.values)
-        print(f'task {task.name} branches {task_count}')
+        #print(f'task {task.name} branches {task_count}')
 
     total_size = total_permutations*(len(benchmark.tasks) + 1)*total_values
 
     skip = int(total_permutations/size)
     print(f'Node {rank} {hostname} total_size {total_size:,} total_permutations {total_permutations:,} total_values {total_values:,} skip {skip:,}')
 
-    #GenerateThreadsSimulationsTask(main_config, benchmark, rank, skip).execute()
+    GenerateThreadsSimulationsTask(main_config, benchmark, rank, skip).execute()
 
     end = datetime.datetime.now()
     print(f'node {rank} {hostname} done {end - start}')
