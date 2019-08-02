@@ -23,7 +23,7 @@ class GenerateThreadsSimulationsTask(ITask):
         self.rank = rank
 
     def produce_task_permutations(self, tasks: List[Task]) -> Iterator[List[Task]]:
-        for workloads in itertools.islice(itertools.permutations(tasks, len(tasks)), int(self.rank * self.skip), int((self.rank + 1) * self.skip) + 1):
+        for workloads in itertools.islice(itertools.permutations(tasks, len(tasks)), int(self.rank * self.skip), int((self.rank + 1) * self.skip)):
             yield workloads
 
     def get_run_args(self, tasks: List[Task]) -> str:
