@@ -46,8 +46,8 @@ if __name__ == "__main__":
 
     run_id = 0
     if rank == 0:
-        tasks_one = get_sorted_list(benchmark.tasks, ["altitude_control_task"])
-        tasks_two = get_sorted_list(benchmark.tasks, ["test_ppm_task"])
+        tasks_one = get_sorted_list(benchmark.tasks, ["link_fbw_send", "check_failsafe_task", "altitude_control_task"])
+        tasks_two = get_sorted_list(benchmark.tasks, ["stabilisation_task", "check_mega128_values_task", "send_data_to_autopilot_task", "test_ppm_task"])
         run_iter = iter(GetRunArgsToValidateTask(main_config, [tasks_one, tasks_two], rank).execute())
 
         # dividing data into chunks
